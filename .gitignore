@@ -4,3 +4,5 @@ python/.venv/
 r/.Rproj.user
 r/.Rhistory
 .Rproj.user
+r/renv/
+r/.Rprofile
