@@ -1,3 +1,6 @@
 python/.venv/
 .DS_Store
 .idea/
+r/.Rproj.user
+r/.Rhistory
+.Rproj.user
