@@ -13,18 +13,23 @@ getWählerAmount = function(df, bezirksart, geschlecht, geburtsjahr, ez) { #only
                 df$Geburtsjahresgruppe == geburtsjahr & df$`Erst-/Zweitstimme` == ez, "Summe"]))
 }
 
+briefAnteile = function() {
+  return(
+    data.frame(
+      Jahr = c("2017", "2021", "2025"),
+      `Wähler gesamt` = c(
+        getWählerAmount (bund17, "Summe", "Summe", "Summe", "2"),
+        getWählerAmount(bund21, "Summe", "Summe", "Summe", "2"),
+        getWählerAmount(bund25, "Summe", "Summe", "Summe", "2")
+      ),
+      `Anteil der Briefwähler` = c(
+        getWählerAmount(bund17, "Brief", "Summe", "Summe", "2") / getWählerAmount(bund17, "Summe", "Summe", "Summe", "2"),
+        getWählerAmount(bund21, "Brief", "Summe", "Summe", "2") / getWählerAmount(bund21, "Summe", "Summe", "Summe", "2"),
+        getWählerAmount(bund25, "Brief", "Summe", "Summe", "2") / getWählerAmount(bund25, "Summe", "Summe", "Summe", "2")
+      )
+    )
+  )
+}
 
 # Anteil der Briefwähler pro Wahljahr
-übersichtAnteilBriefwähler = data.frame(
-  Jahr = c("2017", "2021", "2025"),
-  `Wähler gesamt` = c(
-    getWählerAmount (bund17, "Summe", "Summe", "Summe", "2"),
-    getWählerAmount(bund21, "Summe", "Summe", "Summe", "2"),
-    getWählerAmount(bund25, "Summe", "Summe", "Summe", "2")
-  ),
-  `Anteil der Briefwähler` = c(
-    getWählerAmount(bund17, "Brief", "Summe", "Summe", "2") / getWählerAmount(bund17, "Summe", "Summe", "Summe", "2"),
-    getWählerAmount(bund21, "Brief", "Summe", "Summe", "2") / getWählerAmount(bund21, "Summe", "Summe", "Summe", "2"),
-    getWählerAmount(bund25, "Brief", "Summe", "Summe", "2") / getWählerAmount(bund25, "Summe", "Summe", "Summe", "2")
-  )
-)
+übersichtAnteilBriefwähler = briefAnteile
