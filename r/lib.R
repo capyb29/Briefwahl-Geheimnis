@@ -9,5 +9,5 @@ loadcsv = function(file, uselessrows) {
 }
 
 savecsv = function(df, file) {
-  write.csv2(df, paste0("../data/", file), row.names = TRUE)
+  write.csv2(df, paste0("../data/processed/", file), row.names = TRUE)
 }
