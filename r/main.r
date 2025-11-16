@@ -59,24 +59,42 @@ briefAnteile = function() {
     return((df))
 }
 
-# Filtert die Zweitstimmen Briefwahl-Daten für Kreise heraus
-getZweitstimmenKreis = function(df) {
-  if (deparse(substitute(df)) == "kreis25") {
-    df_new = df[,!grepl("Erststimmen", colnames(df))]
-  } else {
-    df_new = df[, df[1,]!="Erststimmen"]
+correctBundesLänder = function(df) {
+  bundeslaender <- c(
+    HH = "Hansestadt Hamburg",
+    SH = "Schleswig-Holstein",
+    MV = "Mecklenburg-Vorpommern",
+    BE = "Berlin",
+    BB = "Brandenburg",
+    BY = "Bayern",
+    BW = "Baden-Württemberg",
+    HE = "Hessen",
+    NI = "Niedersachsen",
+    NW = "Nordrhein-Westfalen",
+    RP = "Rheinland-Pfalz",
+    SL = "Saarland",
+    SN = "Sachsen",
+    ST = "Sachsen-Anhalt",
+    TH = "Thüringen"
+  )
+  df$Land = bundeslaender[df$Land]
+  if (is.na(df$Land[1])) {
+    df$Land[1] = ""
   }
-  df_new = df_new[df_new[,4]!="Urne",]
-  return(df_new)
+  return(df)
 }
+
 
 # Anteil der Briefwähler pro Wahljahr
 übersichtAnteilBriefwähler = briefAnteile()
 savecsv(übersichtAnteilBriefwähler, "Anteil_Briefwähler.csv")
 
 kreis17_zweitstimmen = getZweitstimmenKreis(kreis17)
+kreis17_zweitstimmen = correctBundesLänder(kreis17_zweitstimmen)
 savecsv(kreis17_zweitstimmen, "Kreis17_Zweitstimmen.csv")
 kreis21_zweitstimmen = getZweitstimmenKreis(kreis21)
+kreis21_zweitstimmen = correctBundesLänder(kreis21_zweitstimmen)
 savecsv(kreis21_zweitstimmen, "Kreis21_Zweitstimmen.csv")
 kreis25_zweitstimmen = getZweitstimmenKreis(kreis25)
+kreis25_zweitstimmen = correctBundesLänder(kreis25_zweitstimmen)
 savecsv(kreis25_zweitstimmen, "Kreis25_Zweitstimmen.csv")
