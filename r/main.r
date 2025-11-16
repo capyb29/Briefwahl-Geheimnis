@@ -59,8 +59,13 @@ briefAnteile = function() {
     return((df))
 }
 
+# Filtert die Zweitstimmen Briefwahl-Daten für Kreise heraus
 getZweitstimmenKreis = function(df) {
-  df_new = df[, df[1,]!="Erststimmen"]
+  if (deparse(substitute(df)) == "kreis25") {
+    df_new = df[,!grepl("Erststimmen", colnames(df))]
+  } else {
+    df_new = df[, df[1,]!="Erststimmen"]
+  }
   df_new = df_new[df_new[,4]!="Urne",]
   return(df_new)
 }
@@ -73,3 +78,5 @@ kreis17_zweitstimmen = getZweitstimmenKreis(kreis17)
 savecsv(kreis17_zweitstimmen, "Kreis17_Zweitstimmen.csv")
 kreis21_zweitstimmen = getZweitstimmenKreis(kreis21)
 savecsv(kreis21_zweitstimmen, "Kreis21_Zweitstimmen.csv")
+kreis25_zweitstimmen = getZweitstimmenKreis(kreis25)
+savecsv(kreis25_zweitstimmen, "Kreis25_Zweitstimmen.csv")
