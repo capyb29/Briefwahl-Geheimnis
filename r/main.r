@@ -59,6 +59,17 @@ briefAnteile = function() {
     return((df))
 }
 
+getZweitstimmenKreis = function(df) {
+  df_new = df[, df[1,]!="Erststimmen"]
+  df_new = df_new[df_new[,4]!="Urne",]
+  return(df_new)
+}
+
 # Anteil der Briefwähler pro Wahljahr
 übersichtAnteilBriefwähler = briefAnteile()
 savecsv(übersichtAnteilBriefwähler, "Anteil_Briefwähler.csv")
+
+kreis17_zweitstimmen = getZweitstimmenKreis(kreis17)
+savecsv(kreis17_zweitstimmen, "Kreis17_Zweitstimmen.csv")
+kreis21_zweitstimmen = getZweitstimmenKreis(kreis21)
+savecsv(kreis21_zweitstimmen, "Kreis21_Zweitstimmen.csv")
