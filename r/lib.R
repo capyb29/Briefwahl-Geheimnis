@@ -53,9 +53,9 @@ change_col_classes = function(df, new_classes) {
     stop("Length of new_classes must match number of columns in data frame")
   }
   for (i in seq_along(new_classes)) {
-    target_class <- new_classes[i]
+    target_class = new_classes[i]
     # Convert each column based on target_class
-    df[[i]] <- switch(target_class,
+    df[[i]] = switch(target_class,
                       character = as.character(df[[i]]),
                       numeric = as.numeric(df[[i]]),
                       integer = as.integer(df[[i]]),
@@ -67,3 +67,17 @@ change_col_classes = function(df, new_classes) {
   }
   return(df)
 }
+
+rbind_fill_na = function(df_big, df_small) {
+  missing_cols = setdiff(names(df_big), names(df_small))
+  
+  for (col in missing_cols) {
+    df_small[[col]] <- NA
+  }
+  
+  df_small = df_small[, names(df_big)]
+  
+  combined = rbind(df_big, df_small)
+  return(combined)
+}
+

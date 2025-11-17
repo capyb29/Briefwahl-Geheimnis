@@ -95,7 +95,9 @@ bundDatenBereinigen = function(df,df2,df3) {
   vec_tmp = unique(vec_tmp)
   df_new = data.frame(matrix(ncol = length(vec_tmp), nrow = 0))
   colnames(df_new) = vec_tmp
-  df_new = rbind(df_new, df, df2, df3)
+  df_new = rbind_fill_na(df_new, df)
+  df_new = rbind_fill_na(df_new, df2)
+  df_new = rbind_fill_na(df_new, df3)
   return(df_new)
 }
 
