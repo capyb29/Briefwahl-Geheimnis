@@ -8,6 +8,7 @@ kreis21 = loadcsv("2021_Urne_Brief_Wahlkreise_Parteien.csv", 3)
 bund25 = loadcsv("2025_Bund_Partei_Brief_Urne_Alter_Geschlecht.csv", 11)
 kreis25 = loadcsv("2025_Urne_Brief_Wahlkreise_Parteien.csv", 3)
 
+
 # returns total amount of voters for given parameters
 getWählerAmount = function(df, bezirksart, geschlecht, geburtsjahr, ez) { #only for bund dataframes
   df = df[df$Bezirksart == bezirksart & paste0(df$Geschlecht,"test") == paste0(geschlecht, "test") & 
