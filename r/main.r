@@ -219,3 +219,13 @@ res = bund2[,] %>% group_by(Jahr, Geschlecht) %>%
             FDP = round(sum(FDP) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,
             AfD = round(sum(AfD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,)
 #res = briefwählerAlterGeschlecht25[order(briefwählerAlterGeschlecht25$Jahr, -briefwählerAlterGeschlecht25$Briefwahlanteil),]
+
+# --- fehlerhaft
+# Wahlbeteiligung nach Wahlbezirksart in den Gruppen
+res2 = kreis_daten_gesamt[kreis_daten_gesamt$Wahlbezirksart == "Brief",] %>% group_by(Jahr) %>%
+  summarise(
+    Wahlberechtigte = sum(Wahlberechtigte), 
+    Wahlbeteiligung = pct(sum(Wähler) / sum(kreis_daten_gesamt[kreis_daten_gesamt$Wahlbezirksart == "Brief" & kreis_daten_gesamt$Jahr == Jahr, "Wahlberechtigte"])),
+    
+  )
+  
