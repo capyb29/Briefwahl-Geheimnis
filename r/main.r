@@ -169,3 +169,7 @@ bund2 = change_col_classes(bund2, c("numeric", rep("character", 4), rep("numeric
 savecsv(bund, "Bund.csv")
 savecsv(bund2, "Bund_clean.csv")
 savecsv(bund3, "Bund_sums.csv")
+
+
+# MAGISCHE ZEILE
+bund2[bund2$Jahr == 2017 & bund2$Bezirksart == "Brief",] %>% group_by(Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe))
