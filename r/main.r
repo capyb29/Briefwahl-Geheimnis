@@ -86,10 +86,26 @@ correctBundesLänder = function(df) {
   return(df)
 }
 
+# Daten Bereinigen und Zusammenfassen
+bundDatenBereinigen = function(df,df2,df3) {
+  df = df[df$`Erst-/Zweitstimme` == 2,]
+  df2 = df2[df2$`Erst-/Zweitstimme` == 2,]
+  df3 = df3[df3$`Erst-/Zweitstimme` == 2,]
+  vec_tmp = c(colnames(df),colnames(df2),colnames(df3))
+  vec_tmp = unique(vec_tmp)
+  df_new = data.frame(matrix(ncol = length(vec_tmp), nrow = 0))
+  colnames(df_new) = vec_tmp
+  df_new = rbind(df_new, df, df2, df3)
+  return(df_new)
+}
+
 
 # Anteil der Briefwähler pro Wahljahr
 übersichtAnteilBriefwähler = briefAnteile()
 savecsv(übersichtAnteilBriefwähler, "Anteil_Briefwähler.csv")
+
+# Bei 2025 m|d|o Geschlecht zu m geändert 
+bund25$Geschlecht[bund25$Geschlecht == "m|d|o"] = "m"
 
 kreis17_zweitstimmen = getZweitstimmenKreis(kreis17)
 kreis17_zweitstimmen = correctBundesLänder(kreis17_zweitstimmen)
@@ -108,3 +124,4 @@ briefwähler_länder = kreis17_zweitstimmen %>% group_by(Land) %>%
          Wähler = sum(Wähler),
          Anteil_Briefwähler = round(sum(Wähler) / sum(Wahlberechtigte), 3) * 100
        )
+bund = bundDatenBereinigen(bund17, bund21, bund25)
