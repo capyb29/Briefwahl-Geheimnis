@@ -72,7 +72,7 @@ rbind_fill_na = function(df_big, df_small) {
   missing_cols = setdiff(names(df_big), names(df_small))
   
   for (col in missing_cols) {
-    df_small[[col]] <- NA
+    df_small[[col]] = NA
   }
   
   df_small = df_small[, names(df_big)]
