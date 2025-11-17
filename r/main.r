@@ -62,6 +62,7 @@ briefAnteile = function() {
 correctBundesLänder = function(df) {
   bundeslaender <- c(
     HH = "Hansestadt Hamburg",
+    HB = "Hansestadt Bremen",
     SH = "Schleswig-Holstein",
     MV = "Mecklenburg-Vorpommern",
     BE = "Berlin",
