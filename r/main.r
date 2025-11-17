@@ -106,6 +106,7 @@ bundDatenBereinigen = function(df,df2,df3) {
   colnames(df_new) = vec_tmp
   df_new = rbind_fill_na(df_new, df)
   df_new = rbind_fill_na(df_new, df2)
+  df_new$`Erst-/Zweitstimme` = NULL
   rownames(df_new) = NULL
   return(df_new)
 }
