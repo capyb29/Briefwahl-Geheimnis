@@ -200,5 +200,7 @@ kreis_daten_gesamt = kreisdatenBereinigen(kreis17_zweitstimmen, kreis21_zweitsti
 savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
 
-# MAGISCHE ZEILE
+# MAGISCHE ZEILEN
 bund2[bund2$Jahr == 2017 & bund2$Bezirksart == "Brief",] %>% group_by(Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe))
+
+kreis_daten_gesamt[kreis_daten_gesamt$Jahr == 2017 & kreis_daten_gesamt$Wahlbezirksart == "Brief",] %>% group_by(Land) %>% summarise(Wahlberechtigte = sum(Wahlberechtigte))
