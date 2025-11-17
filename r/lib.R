@@ -20,7 +20,6 @@ getZweitstimmenKreis = function(df) {
   } else {
     df_new = df[, df[1,]!="Erststimmen"]
   }
-  df_new = df_new[df_new$Wahlbezirksart !="Urne",]
   
   # Hinzufügen der Wahlberechtigten aus Urnenwahlbezirken
   #Ich hasse 2025
@@ -42,9 +41,8 @@ getZweitstimmenKreis = function(df) {
       }
     }
   }
-  df_new$Wahlbezirksart = NULL
   
-  df_new = change_col_classes(df_new, c("numeric", "character", "character", rep("numeric", ncol(df_new)-3)))
+  df_new = change_col_classes(df_new, c("numeric", rep("character", 3), rep("numeric", ncol(df_new)-4)))
   return(df_new)
 }
 
