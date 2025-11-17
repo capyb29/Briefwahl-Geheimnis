@@ -113,6 +113,32 @@ bundDatenBereinigen = function(df,df2,df3) {
   return(df_new)
 }
 
+kreisdatenBereinigen = function(df, df2, df3) {
+  
+  df$Jahr = 2017
+  df2$Jahr = 2021
+  df3$Jahr = 2025
+  
+  names(df2) = sub("du.", "du", names(df2))
+  
+  names(df3) = sub(" - Zweitstimmen$", "", names(df3))
+  names(df3) = sub("Nummer", "Nr.", names(df3))
+  names(df3) = sub("Die Linke", "DIE LINKE", names(df3))
+  
+  vec_tmp = c(colnames(df),colnames(df2),colnames(df3))
+  vec_tmp = unique(vec_tmp)
+  vec_tmp = c("Jahr", vec_tmp[vec_tmp != "Jahr"])
+  vec_tmp = sub(".1", "", vec_tmp)
+  df_new = data.frame(matrix(ncol = length(vec_tmp), nrow = 0))
+  colnames(df_new) = vec_tmp
+  df_new = rbind_fill_na(df_new, df)
+  df_new = rbind_fill_na(df_new, df2)
+  df_new = rbind_fill_na(df_new, df3)
+  rownames(df_new) = NULL
+  
+  return(df_new)
+}
+
 
 # Anteil der Briefwähler pro Wahljahr
 übersichtAnteilBriefwähler = briefAnteile()
@@ -158,17 +184,20 @@ bund2 = bund[!grepl("Summe", bund$Bezirksart),]
 bund2 = bund2[!grepl("Summe", bund2$Geschlecht),]
 bund2 = bund2[!grepl("Summe", bund2$Geburtsjahresgruppe),]
 rownames(bund2) = NULL
+bund2 = change_col_classes(bund2, c("numeric", rep("character", 4), rep("numeric", ncol(bund2)-5)))
 bund3 = bund[grepl("Summe", bund$Bezirksart),]
 bund3 = rbind(bund3, bund[grepl("Summe", bund$Geschlecht),])
 bund3 = rbind(bund3, bund[grepl("Summe", bund$Geburtsjahresgruppe),])
 bund3 = unique(bund3)
 rownames(bund3) = NULL
 
-bund2 = change_col_classes(bund2, c("numeric", rep("character", 4), rep("numeric", ncol(bund2)-5)))
-
 savecsv(bund, "Bund.csv")
 savecsv(bund2, "Bund_clean.csv")
 savecsv(bund3, "Bund_sums.csv")
+
+# cleanup kreisdaten
+kreis_daten_gesamt = kreisdatenBereinigen(kreis17_zweitstimmen, kreis21_zweitstimmen, kreis25_zweitstimmen)
+savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
 
 # MAGISCHE ZEILE
