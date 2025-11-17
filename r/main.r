@@ -204,3 +204,17 @@ savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 bund2[bund2$Jahr == 2017 & bund2$Bezirksart == "Brief",] %>% group_by(Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe))
 
 kreis_daten_gesamt[kreis_daten_gesamt$Jahr == 2017 & kreis_daten_gesamt$Wahlbezirksart == "Brief",] %>% group_by(Land) %>% summarise(Wahlberechtigte = sum(Wahlberechtigte))
+
+
+# ANALYSEN
+
+# Anteil Briefwähler nach Gruppierung + Prozentpunkte der Partei durch Briefwähler
+res = bund2[bund2$Bezirksart == "Brief",] %>% group_by(Jahr, Geburtsjahresgruppe) %>% 
+                                     summarise(Briefwahlanteil = round(sum(Summe) / sum(bund2[bund2$Jahr == Jahr, "Summe"]), 3) * 100,
+                                     CDU_CSU = round((sum(CDU) + sum(CSU)) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == "Brief", "Summe"]), 3) * 100, 
+                                     SPD = round(sum(SPD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == "Brief", "Summe"]), 3) * 100,
+                                     Grüne = round(sum(GRÜNE) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == "Brief", "Summe"]), 3) * 100,
+                                     Linke = round(sum(`DIE LINKE`) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == "Brief", "Summe"]), 3) * 100,
+                                     FDP = round(sum(FDP) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == "Brief", "Summe"]), 3) * 100,
+                                     AfD = round(sum(AfD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == "Brief", "Summe"]), 3) * 100,)
+#res = briefwählerAlterGeschlecht25[order(briefwählerAlterGeschlecht25$Jahr, -briefwählerAlterGeschlecht25$Briefwahlanteil),]
