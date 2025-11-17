@@ -106,6 +106,7 @@ bundDatenBereinigen = function(df,df2,df3) {
   colnames(df_new) = vec_tmp
   df_new = rbind_fill_na(df_new, df)
   df_new = rbind_fill_na(df_new, df2)
+  df_new = rbind_fill_na(df_new, df3)
   df_new$`Erst-/Zweitstimme` = NULL
   rownames(df_new) = NULL
   return(df_new)
@@ -140,9 +141,15 @@ briefwähler_länder = function(df) {
    #res = rbind(res, summary)
   return(res)
 }
+
 briefwähler_länder17 = briefwähler_länder(kreis17_zweitstimmen)
+briefwähler_länder17$Jahr = 2017
 briefwähler_länder21 = briefwähler_länder(kreis21_zweitstimmen)
+briefwähler_länder21$Jahr = 2021
 briefwähler_länder25 = briefwähler_länder(kreis25_zweitstimmen)
+briefwähler_länder25$Jahr = 2025
+
+briefwähler_länder_gesamt = rbind(briefwähler_länder17, briefwähler_länder21, briefwähler_länder25)
 
 
 bund = bundDatenBereinigen(bund17, bund21, bund25)
