@@ -1,4 +1,6 @@
 library(tidyverse)
+library(sf)
+library(giscoR)
 source("lib.R")
 
 bund17 = loadcsv("2017_Bund_Partei_Brief_Urne_Alter_Geschlecht.csv", 10)
@@ -67,8 +69,8 @@ briefAnteile = function() {
 
 correctBundesLänder = function(df) {
   bundeslaender <- c(
-    HH = "Hansestadt Hamburg",
-    HB = "Hansestadt Bremen",
+    HH = "Hamburg",
+    HB = "Bremen",
     SH = "Schleswig-Holstein",
     MV = "Mecklenburg-Vorpommern",
     BE = "Berlin",
