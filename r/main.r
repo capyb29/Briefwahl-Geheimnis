@@ -152,6 +152,20 @@ briefwähler_länder25$Jahr = 2025
 
 briefwähler_länder_gesamt = rbind(briefwähler_länder17, briefwähler_länder21, briefwähler_länder25)
 
-
+# cleanup bund daten
 bund = bundDatenBereinigen(bund17, bund21, bund25)
-savecsv(bund, "Bund_combined.csv")
+bund2 = bund[!grepl("Summe", bund$Bezirksart),]
+bund2 = bund2[!grepl("Summe", bund2$Geschlecht),]
+bund2 = bund2[!grepl("Summe", bund2$Geburtsjahresgruppe),]
+rownames(bund2) = NULL
+bund3 = bund[grepl("Summe", bund$Bezirksart),]
+bund3 = rbind(bund3, bund[grepl("Summe", bund$Geschlecht),])
+bund3 = rbind(bund3, bund[grepl("Summe", bund$Geburtsjahresgruppe),])
+bund3 = unique(bund3)
+rownames(bund3) = NULL
+
+bund2 = change_col_classes(bund2, c("numeric", rep("character", 4), rep("numeric", ncol(bund2)-5)))
+
+savecsv(bund, "Bund.csv")
+savecsv(bund2, "Bund_clean.csv")
+savecsv(bund3, "Bund_sums.csv")
