@@ -96,6 +96,7 @@ bundDatenBereinigen = function(df,df2,df3) {
   df = df[df$`Erst-/Zweitstimme` == 2,]
   df2 = df2[df2$`Erst-/Zweitstimme` == 2,]
   df3 = df3[df3$`Erst-/Zweitstimme` == 2,]
+  names(df3)[names(df3) == "Die Linke"] = "DIE LINKE"
   df$Jahr = 2017
   df2$Jahr = 2021
   df3$Jahr = 2025
