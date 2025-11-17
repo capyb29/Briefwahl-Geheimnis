@@ -100,3 +100,11 @@ savecsv(kreis21_zweitstimmen, "Kreis21_Zweitstimmen.csv")
 kreis25_zweitstimmen = getZweitstimmenKreis(kreis25)
 kreis25_zweitstimmen = correctBundesLänder(kreis25_zweitstimmen)
 savecsv(kreis25_zweitstimmen, "Kreis25_Zweitstimmen.csv")
+
+#Anteile der Briefwähler in den Ländern
+briefwähler_länder = kreis17_zweitstimmen %>% group_by(Land) %>% 
+       summarise(
+         Wahlberechtigte = sum(Wahlberechtigte), 
+         Wähler = sum(Wähler),
+         Anteil_Briefwähler = round(sum(Wähler) / sum(Wahlberechtigte), 3) * 100
+       )

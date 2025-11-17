@@ -4,7 +4,7 @@ loadcsv = function(file, uselessrows) {
   colnames(df) = df[1,]
   df = df[-1,]
   rownames(df) = NULL
-  print(paste0("NA Values: ", any(is.na(df))))
+  #print(paste0("NA Values: ", any(is.na(df))))
   return(df)
 }
 
