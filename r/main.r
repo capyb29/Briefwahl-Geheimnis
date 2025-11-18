@@ -225,7 +225,7 @@ bet = function(Wähler, Wahlberechtigte, Jahr) {
   }
 }
 
-aightBet <- function(filter_list) {
+kreisWahlberechtigteByGroup = function(filter_list) {
   df = kreis_daten_gesamt
   
   for (col in names(filter_list)) {
@@ -242,29 +242,48 @@ aightBet <- function(filter_list) {
   sum(result$Wahlberechtigte)
 }
 
+bundSumByGroup = function(filter_list) {
+  df = bund2
+  for (col in colnames(filter_list)) {
+    val = filter_list[[col]]
+    df = df %>% filter(.data[[col]] == val)
+  }
+  return(sum(df$Summe))
+}
 
-# Anteil Wähler für Bezirksart nach Gruppierung + Wahlergebnis in gewählter Bezirksart für Parteien nach Gruppierung
-res = bund2[bund2$Bezirksart == "Brief",] %>% group_by(Jahr, Geschlecht) %>% 
-  summarise(Bezirksart_Anteil = pct(sum(Summe) / sum(bund2[bund2$Jahr == Jahr, "Summe"])),
-            CDU_CSU = pct((sum(CDU) + sum(CSU)) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])), 
-            SPD = pct(sum(SPD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),
-            Grüne = pct(sum(GRÜNE) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),
-            Linke = pct(sum(`DIE LINKE`) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),
-            FDP = pct(sum(FDP) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])) ,
-            AfD = pct(sum(AfD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),)
-#res = briefwählerAlterGeschlecht25[order(briefwählerAlterGeschlecht25$Jahr, -briefwählerAlterGeschlecht25$Briefwahlanteil),]
+bundAnalyse = function(..., group = "Jahr") {
+  args = list(...)
 
-# --- fehlerhaft
-# fix: wahlberechtigte der selection nutzen mit extra filter auf wahlbezirksart, da sonst sum manchmal verdoppelt
+  res = bund2
+  for (col in names(args)) {
+    val = args[[col]]
+    res = res %>% filter(.data[[col]] == val)
+  }
+  
+  res = res %>% group_by(across(all_of(group))) %>%
+      summarise(
+        Bezirksart_Anteil = pct(sum(Summe) / sum(bund2[bund2$Jahr == Jahr, "Summe"])),
+        CDU_CSU = pct((sum(CDU) + sum(CSU)) / bundSumByGroup(cur_group())),
+        SPD = pct(sum(SPD) / bundSumByGroup(cur_group())),
+        GRÜNE = pct(sum(GRÜNE) / bundSumByGroup(cur_group())),
+        LINKE = pct(sum(`DIE LINKE`) / bundSumByGroup(cur_group())),
+        FDP = pct(sum(FDP) / bundSumByGroup(cur_group())),
+        AFD = pct(sum(AfD) / bundSumByGroup(cur_group())),
+        Sonstige = pct(sum(Sonstige) / bundSumByGroup(cur_group()))
+      )
+  return(res)
+}
+
+res = bundAnalyse(group = c("Jahr", "Geschlecht"))
 # Wahlbeteiligung nach Wahlbezirksart in den Gruppen
 
-filters = c("Land", "Wahlbezirksart")
+filters = c("Land")
 
-res2 = kreis_daten_gesamt[kreis_daten_gesamt$Jahr == 2021,] %>% group_by(across(all_of(filters))) %>%
+res2 = kreis_daten_gesamt[,] %>% group_by(across(all_of(filters))) %>%
   summarise(
-    Wahlberechtigte = aightBet(cur_group()),
-    Wahlbeteiligung = pct(sum(Wähler) / aightBet(cur_group())),
-    SPD = sum(SPD)
+    Wahlberechtigte = kreisWahlberechtigteByGroup(cur_group()),
+    Wahlbeteiligung = pct(sum(Wähler) / kreisWahlberechtigteByGroup(cur_group())),
+    
   )
 
 
