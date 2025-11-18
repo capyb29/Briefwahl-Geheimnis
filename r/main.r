@@ -225,6 +225,26 @@ bet = function(Wähler, Wahlberechtigte, Jahr) {
   }
 }
 
+aightBet <- function(filter_list) {
+  df <- kreis_daten_gesamt
+  
+  # Apply all filters
+  for (col in names(filter_list)) {
+    val <- filter_list[[col]]
+    df <- df %>% filter(.data[[col]] == val)
+  }
+  
+  # Keep first occurrence per Wahlkreis-Nr.
+  result <- df %>%
+    arrange(`Wahlkreis-Nr.`) %>%
+    group_by(`Wahlkreis-Nr.`) %>%
+    slice_head(n = 1) %>%
+    ungroup()
+  
+  sum(result$Wahlberechtigte, na.rm = TRUE)
+}
+
+
 # Anteil Wähler für Bezirksart nach Gruppierung + Wahlergebnis in gewählter Bezirksart für Parteien nach Gruppierung
 res = bund2[bund2$Bezirksart == "Brief",] %>% group_by(Jahr, Geschlecht) %>% 
   summarise(Bezirksart_Anteil = pct(sum(Summe) / sum(bund2[bund2$Jahr == Jahr, "Summe"])),
@@ -239,11 +259,14 @@ res = bund2[bund2$Bezirksart == "Brief",] %>% group_by(Jahr, Geschlecht) %>%
 # --- fehlerhaft
 # fix: wahlberechtigte der selection nutzen mit extra filter auf wahlbezirksart, da sonst sum manchmal verdoppelt
 # Wahlbeteiligung nach Wahlbezirksart in den Gruppen
-res2 = kreis_daten_gesamt[,] %>% group_by(Jahr) %>%
+
+filters = c("Land", "Wahlbezirksart")
+
+res2 = kreis_daten_gesamt[kreis_daten_gesamt$Jahr == 2021,] %>% group_by(across(all_of(filters))) %>%
   summarise(
-    Wahlberechtigte = sum(Wahlberechtigte),
-    Wahlbeteiligung = pct(sum(Wähler) / bet(Wähler, Wahlberechtigte, Jahr)),
-    
+    Wahlberechtigte = aightBet(cur_group()),
+    Wahlbeteiligung = pct(sum(Wähler) / aightBet(cur_group())),
+    SPD = sum(SPD)
   )
 
 
