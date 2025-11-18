@@ -12,6 +12,8 @@ kreise = gisco_get_nuts(
   resolution = "10"
 )
 
+wahlkreise = st_read("../data/wahlkreise/wahlkreise.shp")
+
 bundesländer = gisco_get_nuts(
   country = "Germany",
   nuts_level = 1,
