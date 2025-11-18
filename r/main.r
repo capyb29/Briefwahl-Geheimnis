@@ -226,22 +226,20 @@ bet = function(Wähler, Wahlberechtigte, Jahr) {
 }
 
 aightBet <- function(filter_list) {
-  df <- kreis_daten_gesamt
+  df = kreis_daten_gesamt
   
-  # Apply all filters
   for (col in names(filter_list)) {
-    val <- filter_list[[col]]
-    df <- df %>% filter(.data[[col]] == val)
+    val = filter_list[[col]]
+    df = df %>% filter(.data[[col]] == val)
   }
   
-  # Keep first occurrence per Wahlkreis-Nr.
-  result <- df %>%
+  result = df %>%
     arrange(`Wahlkreis-Nr.`) %>%
     group_by(`Wahlkreis-Nr.`) %>%
     slice_head(n = 1) %>%
     ungroup()
   
-  sum(result$Wahlberechtigte, na.rm = TRUE)
+  sum(result$Wahlberechtigte)
 }
 
 
