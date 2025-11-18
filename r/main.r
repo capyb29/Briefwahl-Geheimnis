@@ -202,28 +202,7 @@ savecsv(bund3, "Bund_sums.csv")
 kreis_daten_gesamt = kreisdatenBereinigen(kreis17_zweitstimmen, kreis21_zweitstimmen, kreis25_zweitstimmen)
 savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
-
-# MAGISCHE ZEILEN
-bund2[bund2$Jahr == 2017 & bund2$Bezirksart == "Brief",] %>% group_by(Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe))
-
-kreis_daten_gesamt[kreis_daten_gesamt$Jahr == 2017 & kreis_daten_gesamt$Wahlbezirksart == "Brief",] %>% group_by(Land) %>% summarise(Wahlberechtigte = sum(Wahlberechtigte))
-
-
 # ANALYSEN
-
-bet = function(Wähler, Wahlberechtigte, Jahr) {
-  x = which(kreis_daten_gesamt$Wahlberechtigte == Wahlberechtigte & kreis_daten_gesamt$Wähler == Wähler & kreis_daten_gesamt$Wahlbezirksart == "Brief" & kreis_daten_gesamt$Jahr == Jahr)
-  y = which(kreis_daten_gesamt$Wahlberechtigte == Wahlberechtigte & kreis_daten_gesamt$Wähler == Wähler & kreis_daten_gesamt$Wahlbezirksart == "Urne" & kreis_daten_gesamt$Jahr == Jahr)
-  z = which(kreis_daten_gesamt$`Wahlkreis-Nr.` == unique(c(kreis_daten_gesamt$`Wahlkreis-Nr.`[x], kreis_daten_gesamt$`Wahlkreis-Nr.`[y])))
-  print(x)
-  print(y)
-  print(z)
-  if (length(x) > 0 & length(y) > 0) {
-    return(sum(kreis_daten_gesamt$Wahlberechtigte[z]))
-  } else {
-    return(sum(kreis_daten_gesamt$Wahlberechtigte[z]))
-  }
-}
 
 kreisWahlberechtigteByGroup = function(filter_list) {
   df = kreis_daten_gesamt
