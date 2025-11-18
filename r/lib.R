@@ -1,8 +1,8 @@
 loadcsv = function(file, uselessrows) {
-  df = read.csv2(paste0("../data/", file), skip=uselessrows)
-  df = df[,colSums(is.na(df)) == 0]
-  colnames(df) = df[1,]
-  df = df[-1,]
+  df = read.csv2(paste0("../data/", file), skip = uselessrows)
+  df = df[, colSums(is.na(df)) == 0]
+  colnames(df) = df[1, ]
+  df = df[-1, ]
   rownames(df) = NULL
   #print(paste0("NA Values: ", any(is.na(df))))
   return(df)
@@ -16,9 +16,9 @@ savecsv = function(df, file) {
 getZweitstimmenKreis = function(df) {
   #Filtern für Zweitstimmen/Briefwahl
   if (deparse(substitute(df)) == "kreis25") {
-    df_new = df[,!grepl("Erststimmen", colnames(df))]
+    df_new = df[, !grepl("Erststimmen", colnames(df))]
   } else {
-    df_new = df[, df[1,]!="Erststimmen"]
+    df_new = df[, df[1, ] != "Erststimmen"]
   }
   
   # Hinzufügen der Wahlberechtigten aus Urnenwahlbezirken
@@ -26,23 +26,30 @@ getZweitstimmenKreis = function(df) {
   if (deparse(substitute(df)) == "kreis25") {
     for (i in seq_len(nrow(df_new))) {
       #Vergleicht die Wahlkreisnummer aus dem neuen Dataframe mit der aus dem Original und nimmt dann die Wahlberechtigtenanzahl aus der Urnen Zeile
-      urne_wahlberechtigte = which(as.integer(df_new$`Wahlkreis-Nummer`[i]) == as.integer(df$`Wahlkreis-Nummer`) & df$Wahlbezirksart == "Urne")
+      urne_wahlberechtigte = which(
+        as.integer(df_new$`Wahlkreis-Nummer`[i]) == as.integer(df$`Wahlkreis-Nummer`) &
+          df$Wahlbezirksart == "Urne"
+      )
       if (length(urne_wahlberechtigte) > 0) {
         df_new$Wahlberechtigte[i] = df$Wahlberechtigte[urne_wahlberechtigte]
       }
     }
   } else {
     # Das gleiche für Jahre 2017,2021
-    df_new = df_new[-1,]
+    df_new = df_new[-1, ]
     for (i in seq_len(nrow(df_new))) {
-      urne_wahlberechtigte = which(as.integer(df_new$`Wahlkreis-Nr.`[i]) == as.integer(df$`Wahlkreis-Nr.`) & df$Wahlbezirksart == "Urne")
+      urne_wahlberechtigte = which(
+        as.integer(df_new$`Wahlkreis-Nr.`[i]) == as.integer(df$`Wahlkreis-Nr.`) &
+          df$Wahlbezirksart == "Urne"
+      )
       if (length(urne_wahlberechtigte) > 0) {
         df_new$Wahlberechtigte[i] = df$Wahlberechtigte[urne_wahlberechtigte]
       }
     }
   }
   
-  df_new = change_col_classes(df_new, c("numeric", rep("character", 3), rep("numeric", ncol(df_new)-4)))
+  df_new = change_col_classes(df_new, c("numeric", rep("character", 3), rep("numeric", ncol(df_new) -
+                                                                              4)))
   return(df_new)
 }
 
@@ -53,14 +60,15 @@ change_col_classes = function(df, new_classes) {
   for (i in seq_along(new_classes)) {
     target_class = new_classes[i]
     # Convert each column based on target_class
-    df[[i]] = switch(target_class,
-                      character = as.character(df[[i]]),
-                      numeric = as.numeric(df[[i]]),
-                      integer = as.integer(df[[i]]),
-                      factor = as.factor(df[[i]]),
-                      logical = as.logical(df[[i]]),
-                      # fallback: try to coerce using as.<class>()
-                      do.call(paste0("as.", target_class), list(df[[i]]))
+    df[[i]] = switch(
+      target_class,
+      character = as.character(df[[i]]),
+      numeric = as.numeric(df[[i]]),
+      integer = as.integer(df[[i]]),
+      factor = as.factor(df[[i]]),
+      logical = as.logical(df[[i]]),
+      # fallback: try to coerce using as.<class>()
+      do.call(paste0("as.", target_class), list(df[[i]]))
     )
   }
   return(df)

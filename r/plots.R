@@ -12,6 +12,14 @@ kreise = gisco_get_nuts(
   resolution = "10"
 )
 
+bundesländer = gisco_get_nuts(
+  country = "Germany",
+  nuts_level = 1,
+  year = "2024",
+  epsg = 3035,
+  resolution = "20"
+)
+
 kreiseReinigen = function(kreise) {
   kreise %>%
     tolower() %>%
@@ -40,8 +48,19 @@ plot_kreis_daten = function(column, title, legend_title) {
       legend.title = element_text(size = 12),
       legend.text = element_text(size = 10)
     )
+  
 }
 
 plot1 = plot_kreis_daten("Wähler", "Anteil der Briefwähler nach Wahlkreis 2025", "Anteil der Briefwähler")
 # Unfinished 
 plot(plot1)
+
+bund_daten = left_join(bundesländer, kreis_daten_gesamt, by = c("NUTS_NAME" = "Land"))
+plot2 = ggplot(data = bund_daten) +
+  geom_sf(aes(fill = Wähler), color = "white") +
+  scale_fill_viridis_c(option = "plasma", na.value = "grey90", name = "Anteil der Wähler") +
+  labs(title = "Anteil der Wähler nach Bundesland 2025") +
+  theme_minimal()
+  
+plot(plot2)
+
