@@ -90,14 +90,6 @@ kreis_daten_gesamt = kreisdatenBereinigen(kreis17_zweitstimmen,
 
 savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
-res = bundAnalyse(group = c("Jahr", "Geschlecht"))
-# Wahlbeteiligung nach Wahlbezirksart in den Gruppen
+res = bundAnalyse(group = c("Geschlecht"))
 
-filters = c("Jahr", "Land")
-
-res2 = kreis_daten_gesamt[, ] %>% group_by(across(all_of(filters))) %>%
-  summarise(
-    Wahlberechtigte = kreisWahlberechtigteByGroup(cur_group()),
-    Wahlbeteiligung = pct(sum(Wähler) / kreisWahlberechtigteByGroup(cur_group())),
-    
-  )
+res2 = kreisAnalyse(group = c("Land"))

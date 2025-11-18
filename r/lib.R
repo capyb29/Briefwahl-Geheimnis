@@ -243,8 +243,21 @@ bundSumByGroup = function(filter_list) {
   return(sum(df$Summe))
 }
 
+kreisSumByGroup = function(filter_list) {
+  df = kreis_daten_gesamt
+  for (col in colnames(filter_list)) {
+    val = filter_list[[col]]
+    df = df %>% filter(.data[[col]] == val)
+  }
+  return(sum(df$Wähler))
+}
+
 bundAnalyse = function(..., group = "Jahr") {
   args = list(...)
+  
+  if (!"Jahr" %in% group) {
+    group = c("Jahr", group)
+  }
   
   res = bund_komplett
   for (col in names(args)) {
@@ -262,6 +275,28 @@ bundAnalyse = function(..., group = "Jahr") {
       FDP = pct(sum(FDP) / bundSumByGroup(cur_group())),
       AFD = pct(sum(AfD) / bundSumByGroup(cur_group())),
       Sonstige = pct(sum(Sonstige) / bundSumByGroup(cur_group()))
+    )
+  return(res)
+}
+
+kreisAnalyse = function(..., group = "Jahr") {
+  args = list(...)
+  
+  if (!"Jahr" %in% group) {
+    group = c("Jahr", group)
+  }
+  
+  res = kreis_daten_gesamt
+  for (col in names(args)) {
+    val = args[[col]]
+    res = res %>% filter(.data[[col]] == val)
+  }
+  
+  res = res %>% group_by(across(all_of(group))) %>%
+    summarise(
+      Wahlberechtigte = kreisWahlberechtigteByGroup(cur_group()),
+      Wahlbeteiligung = pct(sum(Wähler) / kreisWahlberechtigteByGroup(cur_group())),
+      SPD = pct(sum(SPD) / kreisSumByGroup(cur_group())),
     )
   return(res)
 }
