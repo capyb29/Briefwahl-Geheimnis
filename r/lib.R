@@ -55,20 +55,17 @@ getZweitstimmenKreis = function(df) {
 
 change_col_classes = function(df, new_classes) {
   if (length(new_classes) != ncol(df)) {
-    stop("Length of new_classes must match number of columns in data frame")
+    stop("Länge matched nicht")
   }
   for (i in seq_along(new_classes)) {
     target_class = new_classes[i]
-    # Convert each column based on target_class
     df[[i]] = switch(
       target_class,
       character = as.character(df[[i]]),
       numeric = as.numeric(df[[i]]),
       integer = as.integer(df[[i]]),
       factor = as.factor(df[[i]]),
-      logical = as.logical(df[[i]]),
-      # fallback: try to coerce using as.<class>()
-      do.call(paste0("as.", target_class), list(df[[i]]))
+      logical = as.logical(df[[i]])
     )
   }
   return(df)

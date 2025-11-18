@@ -71,8 +71,7 @@ bund_komplett = bund[!grepl("Summe", bund$Bezirksart), ]
 bund_komplett = bund_komplett[!grepl("Summe", bund_komplett$Geschlecht), ]
 bund_komplett = bund_komplett[!grepl("Summe", bund_komplett$Geburtsjahresgruppe), ]
 rownames(bund_komplett) = NULL
-bund_komplett = change_col_classes(bund_komplett, c("numeric", rep("character", 3), rep("numeric", ncol(bund_komplett) -
-                                                                                          4)))
+bund_komplett = change_col_classes(bund_komplett, c("numeric", rep("character", 3), rep("numeric", ncol(bund_komplett)-4)))
 bund3 = bund[grepl("Summe", bund$Bezirksart), ]
 bund3 = rbind(bund3, bund[grepl("Summe", bund$Geschlecht), ])
 bund3 = rbind(bund3, bund[grepl("Summe", bund$Geburtsjahresgruppe), ])
