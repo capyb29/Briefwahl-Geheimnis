@@ -211,23 +211,40 @@ kreis_daten_gesamt[kreis_daten_gesamt$Jahr == 2017 & kreis_daten_gesamt$Wahlbezi
 
 # ANALYSEN
 
+bet = function(Wähler, Wahlberechtigte, Jahr) {
+  x = which(kreis_daten_gesamt$Wahlberechtigte == Wahlberechtigte & kreis_daten_gesamt$Wähler == Wähler & kreis_daten_gesamt$Wahlbezirksart == "Brief" & kreis_daten_gesamt$Jahr == Jahr)
+  y = which(kreis_daten_gesamt$Wahlberechtigte == Wahlberechtigte & kreis_daten_gesamt$Wähler == Wähler & kreis_daten_gesamt$Wahlbezirksart == "Urne" & kreis_daten_gesamt$Jahr == Jahr)
+  z = which(kreis_daten_gesamt$`Wahlkreis-Nr.` == unique(c(kreis_daten_gesamt$`Wahlkreis-Nr.`[x], kreis_daten_gesamt$`Wahlkreis-Nr.`[y])))
+  print(x)
+  print(y)
+  print(z)
+  if (length(x) > 0 & length(y) > 0) {
+    return(sum(kreis_daten_gesamt$Wahlberechtigte[z]))
+  } else {
+    return(sum(kreis_daten_gesamt$Wahlberechtigte[z]))
+  }
+}
+
 # Anteil Wähler für Bezirksart nach Gruppierung + Wahlergebnis in gewählter Bezirksart für Parteien nach Gruppierung
-res = bund2[,] %>% group_by(Jahr, Geschlecht) %>% 
-  summarise(Bezirksart_Anteil = round(sum(Summe) / sum(bund2[bund2$Jahr == Jahr, "Summe"]), 3) * 100,
-            CDU_CSU = round((sum(CDU) + sum(CSU)) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100, 
-            SPD = round(sum(SPD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,
-            Grüne = round(sum(GRÜNE) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,
-            Linke = round(sum(`DIE LINKE`) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,
-            FDP = round(sum(FDP) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,
-            AfD = round(sum(AfD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart, "Summe"]), 3) * 100,)
+res = bund2[bund2$Bezirksart == "Brief",] %>% group_by(Jahr, Geschlecht) %>% 
+  summarise(Bezirksart_Anteil = pct(sum(Summe) / sum(bund2[bund2$Jahr == Jahr, "Summe"])),
+            CDU_CSU = pct((sum(CDU) + sum(CSU)) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])), 
+            SPD = pct(sum(SPD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),
+            Grüne = pct(sum(GRÜNE) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),
+            Linke = pct(sum(`DIE LINKE`) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),
+            FDP = pct(sum(FDP) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])) ,
+            AfD = pct(sum(AfD) / sum(bund2[bund2$Jahr == Jahr & bund2$Bezirksart == Bezirksart & bund2$Geburtsjahresgruppe == Geburtsjahresgruppe & bund2$Geschlecht == Geschlecht, "Summe"])),)
 #res = briefwählerAlterGeschlecht25[order(briefwählerAlterGeschlecht25$Jahr, -briefwählerAlterGeschlecht25$Briefwahlanteil),]
 
 # --- fehlerhaft
+# fix: wahlberechtigte der selection nutzen mit extra filter auf wahlbezirksart, da sonst sum manchmal verdoppelt
 # Wahlbeteiligung nach Wahlbezirksart in den Gruppen
-res2 = kreis_daten_gesamt[kreis_daten_gesamt$Wahlbezirksart == "Brief",] %>% group_by(Jahr) %>%
+res2 = kreis_daten_gesamt[,] %>% group_by(Jahr) %>%
   summarise(
-    Wahlberechtigte = sum(Wahlberechtigte), 
-    Wahlbeteiligung = pct(sum(Wähler) / sum(kreis_daten_gesamt[kreis_daten_gesamt$Wahlbezirksart == "Brief" & kreis_daten_gesamt$Jahr == Jahr, "Wahlberechtigte"])),
+    Wahlberechtigte = sum(Wahlberechtigte),
+    Wahlbeteiligung = pct(sum(Wähler) / bet(Wähler, Wahlberechtigte, Jahr)),
     
   )
+
+
   
