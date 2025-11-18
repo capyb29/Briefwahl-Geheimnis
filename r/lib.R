@@ -235,7 +235,7 @@ bundSumByGroup = function(filter_list) {
   df = bund_komplett
   for (col in colnames(filter_list)) {
     val = filter_list[[col]]
-    df = df %>% filter(.data[[col]] == val)
+    df = df %>% filter(.data[[col]] %in% val)
   }
   return(sum(df$Summe))
 }
@@ -244,7 +244,7 @@ kreisSumByGroup = function(filter_list) {
   df = kreis_daten_gesamt
   for (col in colnames(filter_list)) {
     val = filter_list[[col]]
-    df = df %>% filter(.data[[col]] == val)
+    df = df %>% filter(.data[[col]] %in% val)
   }
   return(sum(df$Wähler))
 }

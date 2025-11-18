@@ -91,4 +91,4 @@ savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
 res = bundAnalyse(group = c("Geschlecht"))
 
-res2 = kreisAnalyse(group = c("Land"))
+res2 = kreisAnalyse(Jahr = 2025, group = c("Wahlkreis-Nr."))
