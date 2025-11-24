@@ -6,21 +6,6 @@ source("main.r")
 
 # Anteil der Briefwähler von allen Wahlberechtigten
 wahlkreise = st_read("../data/wahlkreise/wahlkreise.shp")
-plot1 = left_join(wahlkreise, res2, by = c("WKR_NR" = "Wahlkreis-Nr."))
-plot1 = plot1[!is.na(plot1$Wahlbeteiligung), ]
-
-ggplot(data = plot1) +
-  geom_sf(aes(fill = Wahlbeteiligung)) +
-  scale_fill_gradient(low = "red", high = "green", name = "Briefwähler\nin %\n") +
-  labs(title = "Bundestagswahl 2025\nAnteil der Briefwähler\nvon allen Wahlberechtigten") +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0, size = 16, face = "bold"),
-    legend.title = element_text(hjust = 0.5, size = 8),
-    legend.text = element_text(size = 10)
-  )
-
-
 
 bundesländer = gisco_get_nuts(
   country = "Germany",
