@@ -2,6 +2,7 @@ library(tidyverse)
 library(sf)
 library(giscoR)
 library(stringdist)
+library(leaflet)
 source("main.r")
 
 # Anteil der Briefwähler von allen Wahlberechtigten
@@ -29,29 +30,8 @@ briefPlotLänder$meistgewählt = factor(
   c("CDU", "CSU", "SPD", "LINKE", "GRÜNE", "FDP", "AFD")
 )
 
-ggplot(data = briefPlotLänder) + 
-  geom_sf(aes(fill = (meistgewählt))) + 
-  scale_fill_manual(
-    name = "Partei",
-    values = c("CDU" = "black", "CSU" = "#343A40", "SPD" = "red", "LINKE" = "pink", "GRÜNE" = "green", "FDP" = "yellow", "AFD" = "lightblue"),
-    ) +
-  theme_minimal() +
-  labs(
-    title = "Bundestagswahl 2025",
-    subtitle = "Briefwähler"
-  ) +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
-    plot.subtitle = element_text(hjust = 0.5, size = 12),
-    legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
-    legend.text = element_text(size = 8),
-)
-
 #interactive
 briefPlotLänder_longlat <- st_transform(briefPlotLänder, crs = 4326)
-
-library(leaflet)
-library(dplyr)
 
 # Create a color palette function based on your party colors
 party_colors <- c(
