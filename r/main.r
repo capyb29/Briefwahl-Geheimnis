@@ -73,7 +73,7 @@ savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
 res = bundAnalyse(group = c("Geschlecht"))
 
-res2 = kreisAnalyse(group = c("Land"))
+res2 = kreisAnalyse(group = c("Wahlkreis-Nr."))
 
 länderGeschlecht = newData[!newData$Land %in% c("Bund", "Berlin-Ost", "Berlin-West"),] %>% group_by(Jahr, Land, Geschlecht) %>% 
   summarise(Wähler = sum(Summe), Ungültige = sum(Ungültig), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), 
