@@ -55,6 +55,7 @@ interactive = leaflet(briefPlotLänder_longlat) %>%
   ) %>%
   addPolygons(
     fillColor = ~pal(meistgewählt),
+    group = ~meistgewählt,
     weight = 1,
     opacity = 1,
     color = "white",
@@ -69,9 +70,7 @@ interactive = leaflet(briefPlotLänder_longlat) %>%
     ),
     label = ~paste0(Wahlkreisname, ": ", pct, "%"),
     labelOptions = labelOptions(
-      style = list("font-weight" = "normal", padding = "3px 8px"),
-      textsize = "13px",
-      direction = "auto"
+      style = list("font-weight" = "normal", padding = "3px 8px"), 357
     )
   ) %>%
   addLegend(
@@ -80,7 +79,9 @@ interactive = leaflet(briefPlotLänder_longlat) %>%
     opacity = 0.7,
     title = "Partei",
     position = "bottomright"
-  )
+  ) %>%
+  addLayersControl(overlayGroups = levels(briefPlotLänder$meistgewählt),
+                   options = layersControlOptions(collapsed = FALSE))
 interactive
 
 resBundAnalyse = bundAnalyse(group = "Bezirksart")
