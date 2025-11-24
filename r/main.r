@@ -81,5 +81,7 @@ länderGeschlecht = newData[!newData$Land %in% c("Bund", "Berlin-Ost", "Berlin-W
 länderGeschlecht$meistgewählt = max.col(länderGeschlecht[,(ncol(länderGeschlecht)-7):(ncol(länderGeschlecht)-1)])
 
 länderArt = kreis_daten_gesamt[,] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>% 
-  summarise(Wähler = sum(Wähler), Ungültige = sum(Ungültige), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD))
-länderArt$meistgewählt = as.factor(max.col(länderArt[,(ncol(länderArt)-6):(ncol(länderArt)-0)]))
+  summarise(Wahlkreisname, Wähler = sum(Wähler), Ungültige = sum(Ungültige), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD))
+länderArt$meistgewählt = max.col(länderArt[,(ncol(länderArt)-6):(ncol(länderArt)-0)])
+länderArt$pct = apply(länderArt[,(6:13)], 1, "max")
+länderArt$pct = pct(länderArt$pct / länderArt$Wähler)
