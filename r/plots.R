@@ -15,6 +15,12 @@ bundesländer = gisco_get_nuts(
   resolution = "10"
 )
 
+länderArt = kreis_daten_gesamt[,] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>% 
+  summarise(Wahlkreisname, Wähler = sum(Wähler), Ungültige = sum(Ungültige), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD))
+länderArt$meistgewählt = max.col(länderArt[,(ncol(länderArt)-6):(ncol(länderArt)-0)])
+länderArt$pct = apply(länderArt[,(6:13)], 1, "max")
+länderArt$pct = pct(länderArt$pct / länderArt$Wähler)
+
 #briefPlotLänder17 = left_join(bundesländer, länderArt[länderArt$Jahr == 2017 & länderArt$Wahlbezirksart == "Brief",], by = c("NUTS_NAME" = "Land"))
 briefPlotLänder = left_join(wahlkreise, länderArt[länderArt$Jahr == 2025 & länderArt$Wahlbezirksart == "Brief",], by = c("WKR_NR" = "Wahlkreis-Nr."))
 briefPlotLänder$meistgewählt = factor(
@@ -64,8 +70,8 @@ pal <- colorFactor(palette = party_colors, domain = briefPlotLänder$meistgewäh
 interactive = leaflet(briefPlotLänder_longlat) %>%
   addTiles() %>%  # Add default OpenStreetMap tiles
   addControl(
-    html = "<h3 style='text-align:center;'>My Map Title</h3>",
-    position = "topcenter"
+    html = "<h3 style='text-align:center;'>Bundestagswahl 20xx</h3>",
+    position = "bottomleft"
   ) %>%
   addPolygons(
     fillColor = ~pal(meistgewählt),
@@ -96,3 +102,81 @@ interactive = leaflet(briefPlotLänder_longlat) %>%
     position = "bottomright"
   )
 interactive
+
+resBundAnalyse = bundAnalyse(group = "Bezirksart")
+
+x1 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Brief"]
+y1 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Brief"]
+
+x2 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Urne"]
+y2 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Urne"]
+
+plot(x1, y1, type = "b", frame = FALSE, pch = 19, 
+     col = "red", xlab = "Jahr", ylab = "Anteil in %", 
+     xlim = c(2016, 2026), ylim = c(0,100), main = "Anteil der Brief- und Urnenwahl pro Jahr")
+
+lines(x2, y2, pch = 19, col = "blue", type = "b", lty = 1)
+abline(y2[1], 0, col = "blue", lty = 2)
+abline(y1[1], 0, col = "red", lty = 2)
+
+text(2016.6, 33, paste(y1[1], "%"), col = "red", cex = 0.7)
+text(2016.6, 75.8, paste(y2[1], "%"), col = "blue", cex = 0.7)
+
+legend(2016, 103, legend=c("Brief", "Urne"),
+       col=c("red", "blue"), lty = 1, pch = 19, cex=0.9)  
+
+
+plot_wahlbeteiligung_jahr = function(df, jahr) {
+  df_jahr = df %>% filter(Jahr == jahr)
+  
+  df_jahr$Land = factor(df_jahr$Land, levels = unique(df_jahr$Land))
+  df_jahr$Wahlbezirksart = factor(df_jahr$Wahlbezirksart, levels = c("Urne", "Brief"))
+  
+  m = round(mean(df$Anteil[df$Wahlbezirksart == "Brief" & df$Jahr == jahr]),1)
+  
+  # Plot erstellen mit gestapelten Balken für Urne/Brief je Bundesland
+  p = ggplot(df_jahr, aes(x = Land, y = Anteil, fill = Wahlbezirksart)) +
+    geom_bar(stat = "identity", position = "stack", width = 0.8) +
+    labs(
+      title = paste("Anteil Brief- und Urnenwahl in", jahr),
+      x = "Bundesland",
+      y = "Anteil (%)",
+      fill = "Wahlbezirksart"
+    ) +
+    geom_text(
+      aes(label = round(Anteil)), 
+      position = position_stack(vjust = 0.5), size = 2.7, color = "white"
+    ) +
+    geom_hline(
+      yintercept = m, 
+      color = "blue", 
+      linetype = "dashed", 
+      size = 1) +
+    annotate(
+      "text",
+      x = length(levels(df_jahr$Land)) / 2 -0.5, 
+      y = m+7,            
+      label = paste(m, "%"),
+      size = 5,
+      hjust = 0,
+      fontface = "bold",
+      color = "blue"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1),
+          plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+          plot.subtitle = element_text(hjust = 0.5, size = 12),
+          legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          legend.text = element_text(size = 8))
+  
+  print(p)
+}
+
+anteileLänderJahre = kreis_daten_gesamt %>% group_by(Jahr, Land, Wahlbezirksart) %>%
+  summarise(Anteil = pct(sum(Wähler) / sum(kreis_daten_gesamt[kreis_daten_gesamt$Jahr == Jahr & kreis_daten_gesamt$Land == Land, "Wähler"])))
+
+
+# Bayern und Rheinland-Pfalz immer oben mit dabei
+plot_wahlbeteiligung_jahr(anteileLänderJahre, 2017)
+plot_wahlbeteiligung_jahr(anteileLänderJahre, 2021)
+plot_wahlbeteiligung_jahr(anteileLänderJahre, 2025)

@@ -71,17 +71,13 @@ kreis_daten_gesamt = kreisdatenBereinigen(kreis17_zweitstimmen,
 
 savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
-res = bundAnalyse(group = c("Geschlecht"))
 
-res2 = kreisAnalyse(group = c("Wahlkreis-Nr."))
+resKreisAnalyse = kreisAnalyse(group = c("Wahlkreis-Nr.", "Wahlbezirksart"))
 
 länderGeschlecht = newData[!newData$Land %in% c("Bund", "Berlin-Ost", "Berlin-West"),] %>% group_by(Jahr, Land, Geschlecht) %>% 
   summarise(Wähler = sum(Summe), Ungültige = sum(Ungültig), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), 
   LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD), Sonstige = sum(Sonstige))
 länderGeschlecht$meistgewählt = max.col(länderGeschlecht[,(ncol(länderGeschlecht)-7):(ncol(länderGeschlecht)-1)])
 
-länderArt = kreis_daten_gesamt[,] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>% 
-  summarise(Wahlkreisname, Wähler = sum(Wähler), Ungültige = sum(Ungültige), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD))
-länderArt$meistgewählt = max.col(länderArt[,(ncol(länderArt)-6):(ncol(länderArt)-0)])
-länderArt$pct = apply(länderArt[,(6:13)], 1, "max")
-länderArt$pct = pct(länderArt$pct / länderArt$Wähler)
+
+
