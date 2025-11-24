@@ -17,7 +17,7 @@ bundesländer = gisco_get_nuts(
 )
 
 #briefPlotLänder17 = left_join(bundesländer, länderArt[länderArt$Jahr == 2017 & länderArt$Wahlbezirksart == "Brief",], by = c("NUTS_NAME" = "Land"))
-briefPlotLänder = left_join(wahlkreise, länderArt[länderArt$Jahr == 2021 & länderArt$Wahlbezirksart == "Brief",], by = c("WKR_NR" = "Wahlkreis-Nr."))
+briefPlotLänder = left_join(wahlkreise, länderArt[länderArt$Jahr == 2025 & länderArt$Wahlbezirksart == "Brief",], by = c("WKR_NR" = "Wahlkreis-Nr."))
 briefPlotLänder$meistgewählt = factor(
   briefPlotLänder$meistgewählt,
   c("1", "2", "3", "4", "5", "6", "7"),
@@ -43,6 +43,10 @@ pal <- colorFactor(palette = party_colors, domain = briefPlotLänder$meistgewäh
 # Leaflet interactive map
 interactive = leaflet(briefPlotLänder_longlat) %>%
   addTiles() %>%  # Add default OpenStreetMap tiles
+  addControl(
+    html = "<h3 style='text-align:center;'>My Map Title</h3>",
+    position = "topcenter"
+  ) %>%
   addPolygons(
     fillColor = ~pal(meistgewählt),
     weight = 1,
