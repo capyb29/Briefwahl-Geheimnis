@@ -107,7 +107,9 @@ legend(2016, 103, legend=c("Brief", "Urne"),
 
 
 plot_wahlbeteiligung_jahr = function(df, jahr) {
-  df_jahr = df %>% filter(Jahr == jahr)
+  df_jahr = df %>% filter(Jahr == jahr) %>% 
+    mutate(ba = (Wahlbezirksart == "Brief") * Anteil) %>%
+    arrange(desc(ba))
   
   df_jahr$Land = factor(df_jahr$Land, levels = unique(df_jahr$Land))
   df_jahr$Wahlbezirksart = factor(df_jahr$Wahlbezirksart, levels = c("Urne", "Brief"))
@@ -158,5 +160,8 @@ anteileLänderJahre = kreis_daten_gesamt %>% group_by(Jahr, Land, Wahlbezirksart
 
 # Bayern und Rheinland-Pfalz immer oben mit dabei
 plot_wahlbeteiligung_jahr(anteileLänderJahre, 2017)
+ggsave("./plots/ArtAnteileLänder17.png")
 plot_wahlbeteiligung_jahr(anteileLänderJahre, 2021)
+ggsave("./plots/ArtAnteileLänder21.png")
 plot_wahlbeteiligung_jahr(anteileLänderJahre, 2025)
+ggsave("./plots/ArtAnteileLänder25.png")
