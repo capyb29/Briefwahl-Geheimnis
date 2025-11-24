@@ -12,6 +12,76 @@ savecsv = function(df, file) {
   write.csv2(df, paste0("../data/processed/", file), row.names = TRUE)
 }
 
+correctBundesLänder = function(df) {
+  bundeslaender <- c(
+    HH = "Hamburg",
+    HB = "Bremen",
+    SH = "Schleswig-Holstein",
+    MV = "Mecklenburg-Vorpommern",
+    BE = "Berlin",
+    `BE-O` = "Berlin-Ost",
+    `BE-W`= "Berlin-West",
+    BB = "Brandenburg",
+    BY = "Bayern",
+    BW = "Baden-Württemberg",
+    HE = "Hessen",
+    NI = "Niedersachsen",
+    NW = "Nordrhein-Westfalen",
+    RP = "Rheinland-Pfalz",
+    SL = "Saarland",
+    SN = "Sachsen",
+    ST = "Sachsen-Anhalt",
+    TH = "Thüringen",
+    Bund = "Bund"
+  )
+  df$Land = bundeslaender[df$Land]
+  if (is.na(df$Land[1])) {
+    df$Land[1] = ""
+  }
+  return(df)
+}
+
+loadAndCleanNewData = function(df1, df2, df3) {
+  df1 = correctBundesLänder(df1)
+  df2 = correctBundesLänder(df2)
+  df3 = correctBundesLänder(df3)
+  
+  df1 = df1[!grepl("Summe", df1$Geburtsjahresgruppe),]
+  df1 = df1[!grepl("Summe", df1$Geschlecht),]
+  df1 = df1[df1$`Erst-/Zweitstimme`== 2,]
+  
+  df2 = df2[!grepl("Summe", df2$Geburtsjahresgruppe),]
+  df2 = df2[!grepl("Summe", df2$Geschlecht),]
+  df2 = df2[df2$`Erst-/Zweitstimme`== 2,]
+  
+  df3 = df3[!grepl("Summe", df3$Geburtsjahresgruppe),]
+  df3 = df3[!grepl("Summe", df3$Geschlecht),]
+  df3 = df3[df1$`Erst-/Zweitstimme`== 2,]
+  
+  names(df3)[names(df3) == "Die Linke"] = "DIE LINKE"
+  df1$Jahr = 2017
+  df2$Jahr = 2021
+  df3$Jahr = 2025
+  
+  vec_tmp = c(colnames(df), colnames(df2), colnames(df3))
+  vec_tmp = unique(vec_tmp)
+  vec_tmp = c("Jahr", vec_tmp[vec_tmp != "Jahr"])
+  
+  df_new = data.frame(matrix(ncol = length(vec_tmp), nrow = 0))
+  colnames(df_new) = vec_tmp
+  df_new = rbind_fill_na(df_new, df1)
+  df_new = rbind_fill_na(df_new, df2)
+  df_new = rbind_fill_na(df_new, df3)
+  df_new$`Erst-/Zweitstimme` = NULL
+  rownames(df_new) = NULL
+  
+  df_new = change_col_classes(df_new, c("numeric", rep("character", 3), rep("numeric", ncol(df_new) - 4)))
+  
+  df_new[is.na(df_new)] = 0
+  
+  return(df_new)
+}
+
 # Filtert die Zweitstimmen Briefwahl-Daten für Kreise heraus
 getZweitstimmenKreis = function(df) {
   #Filtern für Zweitstimmen/Briefwahl

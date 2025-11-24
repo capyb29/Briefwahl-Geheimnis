@@ -15,31 +15,13 @@ kreis25 = loadcsv("2025_Urne_Brief_Wahlkreise_Parteien.csv", 3)
 names(kreis25)[names(kreis25) == "Wählende"] = "Wähler"
 names(kreis21)[names(kreis21) == "Wählende"] = "Wähler"
 
-correctBundesLänder = function(df) {
-  bundeslaender <- c(
-    HH = "Hamburg",
-    HB = "Bremen",
-    SH = "Schleswig-Holstein",
-    MV = "Mecklenburg-Vorpommern",
-    BE = "Berlin",
-    BB = "Brandenburg",
-    BY = "Bayern",
-    BW = "Baden-Württemberg",
-    HE = "Hessen",
-    NI = "Niedersachsen",
-    NW = "Nordrhein-Westfalen",
-    RP = "Rheinland-Pfalz",
-    SL = "Saarland",
-    SN = "Sachsen",
-    ST = "Sachsen-Anhalt",
-    TH = "Thüringen"
-  )
-  df$Land = bundeslaender[df$Land]
-  if (is.na(df$Land[1])) {
-    df$Land[1] = ""
-  }
-  return(df)
-}
+df17 = loadcsv("17_neu.csv", 10)
+df21 = loadcsv("21_neu.csv", 11)
+df25 = loadcsv("25_neu.csv", 10)
+
+newData = loadAndCleanNewData(df17, df21, df25)
+savecsv(newData, "new.csv")
+
 
 # Anteil der Briefwähler pro Wahljahr
 übersichtAnteilBriefwähler = briefAnteile()
@@ -91,4 +73,13 @@ savecsv(kreis_daten_gesamt, "Kreisdaten_Gesamt.csv")
 
 res = bundAnalyse(group = c("Geschlecht"))
 
-res2 = kreisAnalyse(Jahr = 2025, group = c("Wahlkreis-Nr."))
+res2 = kreisAnalyse(group = c("Land"))
+
+länderGeschlecht = newData[!newData$Land %in% c("Bund", "Berlin-Ost", "Berlin-West"),] %>% group_by(Jahr, Land, Geschlecht) %>% 
+  summarise(Wähler = sum(Summe), Ungültige = sum(Ungültig), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), 
+  LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD), Sonstige = sum(Sonstige))
+länderGeschlecht$meistgewählt = max.col(länderGeschlecht[,(ncol(länderGeschlecht)-7):(ncol(länderGeschlecht)-1)])
+
+länderArt = kreis_daten_gesamt[,] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>% 
+  summarise(Wähler = sum(Wähler), Ungültige = sum(Ungültige), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD))
+länderArt$meistgewählt = as.factor(max.col(länderArt[,(ncol(länderArt)-6):(ncol(länderArt)-0)]))
