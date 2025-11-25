@@ -84,28 +84,33 @@ interactive = leaflet(briefPlotLänder_longlat) %>%
                    options = layersControlOptions(collapsed = FALSE))
 interactive
 
-resBundAnalyse = bundAnalyse(group = "Bezirksart")
 
-x1 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Brief"]
-y1 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Brief"]
+# Plot Brief/Urnenanteil über Jahreart
+artAnteilJahre = function() {
+  resBundAnalyse = bundAnalyse(group = "Bezirksart")
 
-x2 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Urne"]
-y2 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Urne"]
+  x1 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Brief"]
+  y1 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Brief"]
 
-plot(x1, y1, type = "b", frame = FALSE, pch = 19, 
-     col = "red", xlab = "Jahr", ylab = "Anteil in %", 
-     xlim = c(2016, 2026), ylim = c(0,100), main = "Anteil der Brief- und Urnenwahl pro Jahr")
+  x2 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Urne"]
+  y2 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Urne"]
 
-lines(x2, y2, pch = 19, col = "blue", type = "b", lty = 1)
-abline(y2[1], 0, col = "blue", lty = 2)
-abline(y1[1], 0, col = "red", lty = 2)
+  plot(x1, y1, type = "b", frame = FALSE, pch = 19, 
+      col = "red", xlab = "Jahr", ylab = "Anteil in %", 
+      xlim = c(2016, 2026), ylim = c(0,100), main = "Anteil der Brief- und Urnenwahl pro Jahr")
 
-text(2016.6, 33, paste(y1[1], "%"), col = "red", cex = 0.7)
-text(2016.6, 75.8, paste(y2[1], "%"), col = "blue", cex = 0.7)
+  lines(x2, y2, pch = 19, col = "blue", type = "b", lty = 1)
+  abline(y2[1], 0, col = "blue", lty = 2)
+  abline(y1[1], 0, col = "red", lty = 2)
 
-legend(2016, 103, legend=c("Brief", "Urne"),
-       col=c("red", "blue"), lty = 1, pch = 19, cex=0.9)  
+  text(2016.6, 33, paste(y1[1], "%"), col = "red", cex = 0.7)
+  text(2016.6, 75.8, paste(y2[1], "%"), col = "blue", cex = 0.7)
 
+  legend(2016, 103, legend=c("Brief", "Urne"),
+        col=c("red", "blue"), lty = 1, pch = 19, cex=0.9)  
+}
+
+artAnteilJahre()
 
 plot_wahlbeteiligung_jahr = function(df, jahr) {
   df_jahr = df %>% filter(Jahr == jahr) %>% 
@@ -169,10 +174,15 @@ plot_wahlbeteiligung_jahr(anteileLänderJahre, 2025)
 ggsave("./plots/ArtAnteileLänder25.png")
 
 
-
+# Plot Geschlecht Art Partei
 bundArtGeschlecht = bundAnalyse(group = c("Bezirksart", "Geschlecht"))
 parties = c("CDU_CSU","SPD","GRÜNE","LINKE","FDP","AFD","Sonstige")
 df_long = bundArtGeschlecht %>% pivot_longer(cols = all_of(parties), names_to = "Partei", values_to = "Stimmenanteil")
+
+df_long <- df_long %>%
+  group_by(Jahr, Bezirksart, Geschlecht) %>%
+  mutate(Partei = factor(Partei, levels = Partei[order(-Stimmenanteil)])) %>%
+  ungroup()
 
 ggplot(df_long) +
   aes(x = Partei, y = Stimmenanteil, fill = Geschlecht) + 
@@ -186,3 +196,37 @@ ggplot(df_long) +
         legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
         legend.text = element_text(size = 8))
 ggsave("./plots/ParteiArtGeschlechtJahre.png")
+
+# vorläufig
+# Plot with Brief and Urne side by side, stacked by Geschlecht
+ggplot(bundArtGeschlecht, aes(x = factor(Jahr), y = Bezirksart_Anteil, fill = Geschlecht)) +
+  geom_bar(aes(group = Bezirksart ), stat = "identity", position = position_stack()) +
+  facet_wrap( ~Bezirksart) +
+  labs(x = "Year", y = "Bezirksart Anteil", fill = "Geschlecht",
+       title = "Bezirksart Anteile nach Geschlecht über die Jahre") +
+  theme_minimal() +
+  scale_x_discrete(expand = expansion(add = c(0.2, 0.2))) +
+  theme(legend.position = "top")
+
+# hypothesentest ob wähler von geschlecht abhängt,
+# aktuell noch nicht ideal, da altersgruppen mit drin sind
+# am besten mit newData nochmal machen, weil mehr datensätze
+# dran denken alter rausnehmen
+tBrief = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Brief",])
+tUrne = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Urne",])
+
+
+#nur ein test
+# Create boxplot
+ggplot(bund_komplett, aes(x = Bezirksart, y = Summe, fill = Bezirksart)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.15, alpha = 0.5) + # show individual points
+  labs(title = "Wähler",
+       x = "Bezirksart",
+       y = "Wähler") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+
+
