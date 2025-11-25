@@ -167,3 +167,22 @@ plot_wahlbeteiligung_jahr(anteileLänderJahre, 2021)
 ggsave("./plots/ArtAnteileLänder21.png")
 plot_wahlbeteiligung_jahr(anteileLänderJahre, 2025)
 ggsave("./plots/ArtAnteileLänder25.png")
+
+
+
+bundArtGeschlecht = bundAnalyse(group = c("Bezirksart", "Geschlecht"))
+parties = c("CDU_CSU","SPD","GRÜNE","LINKE","FDP","AFD","Sonstige")
+df_long = bundArtGeschlecht %>% pivot_longer(cols = all_of(parties), names_to = "Partei", values_to = "Stimmenanteil")
+
+ggplot(df_long) +
+  aes(x = Partei, y = Stimmenanteil, fill = Geschlecht) + 
+  labs(title = "Wahlanteile nach Bezirksart und Geschlecht über die Jahre") +
+  geom_col(position = position_dodge()) + 
+  facet_grid(Jahr ~ Bezirksart) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+        legend.text = element_text(size = 8))
+ggsave("./plots/ParteiArtGeschlechtJahre.png")
