@@ -17,10 +17,22 @@ bundesländer = gisco_get_nuts(
   resolution = "10"
 )
 
-länderArt = kreis_daten_gesamt[,] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>% 
-  summarise(Wahlkreisname, Wähler = sum(Wähler), Ungültige = sum(Ungültige), CDU = sum(CDU), CSU = sum(CSU), SPD = sum(SPD), LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD))
-länderArt$meistgewählt = max.col(länderArt[,(ncol(länderArt)-6):(ncol(länderArt)-0)])
-länderArt$pct = apply(länderArt[,(6:13)], 1, "max")
+länderArt = kreis_daten_gesamt[, ] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>%
+  summarise(
+    Wahlkreisname,
+    Wähler = sum(Wähler),
+    Ungültige = sum(Ungültige),
+    CDU = sum(CDU),
+    CSU = sum(CSU),
+    SPD = sum(SPD),
+    LINKE = sum(`DIE LINKE`),
+    GRÜNE = sum(GRÜNE),
+    FDP = sum(FDP),
+    AFD = sum(AfD)
+  )
+länderArt$meistgewählt = max.col(länderArt[, (ncol(länderArt) - 6):(ncol(länderArt) -
+                                                                      0)])
+länderArt$pct = apply(länderArt[, (6:13)], 1, "max")
 länderArt$pct = pct(länderArt$pct / länderArt$Wähler)
 
 #briefPlotLänder17 = left_join(bundesländer, länderArt[länderArt$Jahr == 2017 & länderArt$Wahlbezirksart == "Brief",], by = c("NUTS_NAME" = "Land"))
@@ -32,10 +44,10 @@ briefPlotLänder$meistgewählt = factor(
 )
 
 #interactive
-briefPlotLänder_longlat <- st_transform(briefPlotLänder, crs = 4326)
+briefPlotLänder_longlat = st_transform(briefPlotLänder, crs = 4326)
 
 # Create a color palette function based on your party colors
-party_colors <- c(
+party_colors = c(
   "CDU" = "black",
   "CSU" = "#343A40",
   "SPD" = "red",
@@ -45,19 +57,31 @@ party_colors <- c(
   "AFD" = "lightblue"
 )
 
-pal <- colorFactor(palette = party_colors, domain = briefPlotLänder$meistgewählt)
+bbox = st_bbox(briefPlotLänder_longlat)
+
+pal = colorFactor(palette = party_colors, domain = briefPlotLänder$meistgewählt)
 
 ui = bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
-  leafletOutput("map",height = "100%",width = "100%"),
-  absolutePanel(top = 10,width = "5%",height = "5%", right = 5,
-                radioButtons("jahr", "Wahljahr",
-                             choices = c("2017","2021","2025"),
-                             selected = "2025"),
-                radioButtons("art", "Wahlart",
-                             choices = c("Brief","Urne","Beides"),
-                             selected = "Beides")
-                )
+  leafletOutput("map", height = "100%", width = "100%"),
+  absolutePanel(
+    top = 10,
+    width = "5%",
+    height = "5%",
+    right = 5,
+    radioButtons(
+      "jahr",
+      "Wahljahr",
+      choices = c("2017", "2021", "2025"),
+      selected = "2025"
+    ),
+    radioButtons(
+      "art",
+      "Wahlart",
+      choices = c("Brief", "Urne", "Beides"),
+      selected = "Beides"
+    )
+  )
 )
 
 server = function(input, output, session) {
@@ -74,9 +98,12 @@ server = function(input, output, session) {
   output$map = renderLeaflet({
     leaflet(briefPlotLänder_longlat) %>%
       addTiles() %>%
+      setView(lng = 10.45403,
+              lat = 51.16425,
+              zoom = 6) %>%
       addLegend(
         pal = pal,
-        values = ~meistgewählt,
+        values = ~ meistgewählt,
         opacity = 0.7,
         title = "Partei",
         position = "bottomright"
@@ -87,8 +114,8 @@ server = function(input, output, session) {
     leafletProxy("map", data = gefilterte_daten()) %>%
       clearShapes() %>%
       addPolygons(
-        fillColor = ~pal(meistgewählt),
-        group = ~meistgewählt,
+        fillColor = ~ pal(meistgewählt),
+        group = ~ meistgewählt,
         weight = 1,
         opacity = 1,
         color = "white",
@@ -101,15 +128,27 @@ server = function(input, output, session) {
           fillOpacity = 0.9,
           bringToFront = TRUE
         ),
-        label = ~paste0(Wahlkreisname, ": ", pct, "%"),
-        labelOptions = labelOptions(
-          style = list("font-weight" = "normal", padding = "3px 8px")
+        label = ~ paste0(Wahlkreisname,"<br/>", meistgewählt, ": ", pct, "%"),
+        labelOptions = labelOptions(style = list(
+          "font-weight" = "normal", padding = "3px 8px"
+        )),
+        popup = ~ paste0(
+          "<strong>Wahlkreis: </strong>", Wahlkreisname, "<br/>",
+          "<strong>Parteien: </strong><br/>",
+          "CDU: ", CDU, "<br/>",
+          "CSU: ", CSU, "<br/>",
+          "SPD: ", SPD, "<br/>",
+          "LINKE: ", LINKE, "<br/>",
+          "GRÜNE: ", GRÜNE, "<br/>",
+          "FDP: ", FDP, "<br/>",
+          "AFD: ", AFD, "<br/>"
         )
       )
   })
 }
 
 shinyApp(ui, server)
+
 
 # # Leaflet interactive map
 # interactive = leaflet(briefPlotLänder_longlat) %>%
@@ -148,40 +187,40 @@ shinyApp(ui, server)
 #   addLayersControl(overlayGroups = levels(briefPlotLänder$meistgewählt),
 #                    options = layersControlOptions(collapsed = FALSE))
 # interactive
-# 
+#
 # resBundAnalyse = bundAnalyse(group = "Bezirksart")
-# 
+#
 # x1 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Brief"]
 # y1 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Brief"]
-# 
+#
 # x2 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Urne"]
 # y2 = resBundAnalyse$Bezirksart_Anteil[resBundAnalyse$Bezirksart == "Urne"]
-# 
-# plot(x1, y1, type = "b", frame = FALSE, pch = 19, 
-#      col = "red", xlab = "Jahr", ylab = "Anteil in %", 
+#
+# plot(x1, y1, type = "b", frame = FALSE, pch = 19,
+#      col = "red", xlab = "Jahr", ylab = "Anteil in %",
 #      xlim = c(2016, 2026), ylim = c(0,100), main = "Anteil der Brief- und Urnenwahl pro Jahr")
-# 
+#
 # lines(x2, y2, pch = 19, col = "blue", type = "b", lty = 1)
 # abline(y2[1], 0, col = "blue", lty = 2)
 # abline(y1[1], 0, col = "red", lty = 2)
-# 
+#
 # text(2016.6, 33, paste(y1[1], "%"), col = "red", cex = 0.7)
 # text(2016.6, 75.8, paste(y2[1], "%"), col = "blue", cex = 0.7)
-# 
+#
 # legend(2016, 103, legend=c("Brief", "Urne"),
-#        col=c("red", "blue"), lty = 1, pch = 19, cex=0.9)  
-# 
-# 
+#        col=c("red", "blue"), lty = 1, pch = 19, cex=0.9)
+#
+#
 # plot_wahlbeteiligung_jahr = function(df, jahr) {
-#   df_jahr = df %>% filter(Jahr == jahr) %>% 
+#   df_jahr = df %>% filter(Jahr == jahr) %>%
 #     mutate(ba = (Wahlbezirksart == "Brief") * Anteil) %>%
 #     arrange(desc(ba))
-#   
+#
 #   df_jahr$Land = factor(df_jahr$Land, levels = unique(df_jahr$Land))
 #   df_jahr$Wahlbezirksart = factor(df_jahr$Wahlbezirksart, levels = c("Urne", "Brief"))
-#   
+#
 #   m = round(mean(df$Anteil[df$Wahlbezirksart == "Brief" & df$Jahr == jahr]),1)
-#   
+#
 #   # Plot erstellen mit gestapelten Balken für Urne/Brief je Bundesland
 #   p = ggplot(df_jahr, aes(x = Land, y = Anteil, fill = Wahlbezirksart)) +
 #     geom_bar(stat = "identity", position = "stack", width = 0.8) +
@@ -192,18 +231,18 @@ shinyApp(ui, server)
 #       fill = "Wahlbezirksart"
 #     ) +
 #     geom_text(
-#       aes(label = round(Anteil)), 
+#       aes(label = round(Anteil)),
 #       position = position_stack(vjust = 0.5), size = 2.7, color = "white"
 #     ) +
 #     geom_hline(
-#       yintercept = m, 
-#       color = "blue", 
-#       linetype = "dashed", 
+#       yintercept = m,
+#       color = "blue",
+#       linetype = "dashed",
 #       size = 1) +
 #     annotate(
 #       "text",
-#       x = length(levels(df_jahr$Land)) / 2 -0.5, 
-#       y = m+7,            
+#       x = length(levels(df_jahr$Land)) / 2 -0.5,
+#       y = m+7,
 #       label = paste(m, "%"),
 #       size = 5,
 #       hjust = 0,
@@ -216,15 +255,15 @@ shinyApp(ui, server)
 #           plot.subtitle = element_text(hjust = 0.5, size = 12),
 #           legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
 #           legend.text = element_text(size = 8))
-#   
+#
 #   print(p)
 # }
-# 
+#
 # anteileLänderJahre = kreis_daten_gesamt %>% group_by(Jahr, Land, Wahlbezirksart) %>%
 #   summarise(Anteil = pct(sum(Wähler) / sum(kreis_daten_gesamt[kreis_daten_gesamt$Jahr == Jahr & kreis_daten_gesamt$Land == Land, "Wähler"])))
-# 
+#
 # #briefwahl durschnitt nicht korrekt
-# 
+#
 # # Bayern und Rheinland-Pfalz immer oben mit dabei
 # plot_wahlbeteiligung_jahr(anteileLänderJahre, 2017)
 # ggsave("./plots/ArtAnteileLänder17.png")
