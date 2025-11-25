@@ -157,6 +157,7 @@ plot_wahlbeteiligung_jahr = function(df, jahr) {
 anteileLänderJahre = kreis_daten_gesamt %>% group_by(Jahr, Land, Wahlbezirksart) %>%
   summarise(Anteil = pct(sum(Wähler) / sum(kreis_daten_gesamt[kreis_daten_gesamt$Jahr == Jahr & kreis_daten_gesamt$Land == Land, "Wähler"])))
 
+#briefwahl durschnitt nicht korrekt
 
 # Bayern und Rheinland-Pfalz immer oben mit dabei
 plot_wahlbeteiligung_jahr(anteileLänderJahre, 2017)
