@@ -120,7 +120,10 @@ plot_wahlbeteiligung_jahr = function(df, jahr) {
   df_jahr$Land = factor(df_jahr$Land, levels = unique(df_jahr$Land))
   df_jahr$Wahlbezirksart = factor(df_jahr$Wahlbezirksart, levels = c("Urne", "Brief"))
   
-  m = round(mean(df$Anteil[df$Wahlbezirksart == "Brief" & df$Jahr == jahr]),1)
+  m = kreis_daten_gesamt[kreis_daten_gesamt$Jahr == jahr,] %>% group_by(Wahlbezirksart) %>%
+    summarise(Anteil = pct(sum(Wähler) / sum(kreis_daten_gesamt$Wähler[kreis_daten_gesamt$Jahr == jahr])))
+  m = m$Anteil[1]
+  print(m)
   
   # Plot erstellen mit gestapelten Balken für Urne/Brief je Bundesland
   p = ggplot(df_jahr, aes(x = Land, y = Anteil, fill = Wahlbezirksart)) +
