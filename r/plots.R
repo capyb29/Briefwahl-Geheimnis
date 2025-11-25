@@ -4,6 +4,7 @@ library(giscoR)
 library(stringdist)
 library(leaflet)
 library(shiny)
+library(htmltools)
 source("main.r")
 
 # Anteil der Briefwähler von allen Wahlberechtigten
@@ -66,9 +67,10 @@ ui = bootstrapPage(
   leafletOutput("map", height = "100%", width = "100%"),
   absolutePanel(
     top = 10,
-    width = "5%",
-    height = "5%",
+    width = "8vw",
+    height = "auto",
     right = 5,
+    style = "background-color: #f5f5f5; padding: 10px; border-radius: 5px;",
     radioButtons(
       "jahr",
       "Wahljahr",
@@ -80,6 +82,15 @@ ui = bootstrapPage(
       "Wahlart",
       choices = c("Brief", "Urne", "Beides"),
       selected = "Beides"
+    ),
+    selectInput(
+      "popup_mode",
+      "Popup-Anzeige",
+      choices = c(
+        "Absolute Zahlen" = "Absolute",
+        "Prozentuale Anteile" = "Prozent"
+      ),
+      selected = "Absolute"
     )
   )
 )
@@ -92,6 +103,62 @@ server = function(input, output, session) {
     if (art != "Beides") {
       daten = daten[daten$Wahlbezirksart == art, ]
     }
+    #TODO beides overlay Brief und Urne
+    switch (
+      input$popup_mode,
+      "Prozent" = (
+        daten$popup_content <- paste0(
+          "<strong>Wahlkreis: </strong>",
+          daten$Wahlkreisname,
+          "<br/>",
+          "<strong>Parteien: </strong><br/>",
+          "CDU/CSU: ",
+          pct((daten$CDU + daten$CSU) / daten$Wähler),
+          "%<br/>",
+          "SPD: ",
+          pct(daten$SPD / daten$Wähler),
+          "%<br/>",
+          "LINKE: ",
+          pct(daten$LINKE / daten$Wähler),
+          "%<br/>",
+          "GRÜNE: ",
+          pct(daten$GRÜNE / daten$Wähler),
+          "%<br/>",
+          "FDP: ",
+          pct(daten$FDP / daten$Wähler),
+          "%<br/>",
+          "AFD: ",
+          pct(daten$AFD / daten$Wähler),
+          "%<br/>"
+        )
+      ),
+      "Absolute" = (
+        daten$popup_content <- paste0(
+          "<strong>Wahlkreis: </strong>",
+          daten$Wahlkreisname,
+          "<br/>",
+          "<strong>Parteien: </strong><br/>",
+          "CDU/CSU: ",
+          daten$CDU + daten$CSU,
+          "<br/>",
+          "SPD: ",
+          daten$SPD,
+          "<br/>",
+          "LINKE: ",
+          daten$LINKE,
+          "<br/>",
+          "GRÜNE: ",
+          daten$GRÜNE,
+          "<br/>",
+          "FDP: ",
+          daten$FDP,
+          "<br/>",
+          "AFD: ",
+          daten$AFD,
+          "<br/>"
+        )
+      )
+    )
     daten
   })
   
@@ -128,66 +195,32 @@ server = function(input, output, session) {
           fillOpacity = 0.9,
           bringToFront = TRUE
         ),
-        label = ~ paste0(Wahlkreisname,"<br/>", meistgewählt, ": ", pct, "%"),
-        labelOptions = labelOptions(style = list(
-          "font-weight" = "normal", padding = "3px 8px"
-        )),
-        popup = ~ paste0(
-          "<strong>Wahlkreis: </strong>", Wahlkreisname, "<br/>",
-          "<strong>Parteien: </strong><br/>",
-          "CDU: ", CDU, "<br/>",
-          "CSU: ", CSU, "<br/>",
-          "SPD: ", SPD, "<br/>",
-          "LINKE: ", LINKE, "<br/>",
-          "GRÜNE: ", GRÜNE, "<br/>",
-          "FDP: ", FDP, "<br/>",
-          "AFD: ", AFD, "<br/>"
-        )
+        label = ~ paste0(
+          "<b>",
+          Wahlkreisname,
+          "</b><br/>",
+          meistgewählt,
+          " (",
+          pct,
+          "%)"
+        ) %>% lapply(htmltools::HTML),
+        labelOptions = labelOptions(
+          style = list("font-weight" = "normal", padding = "3px 8px"),
+          html = TRUE,
+          direction = "auto"
+        ),
+        popup = ~ popup_content
       )
   })
 }
 
 shinyApp(ui, server)
 
+# Die Zeile unten in der R-Konsole!!! ausführen, um die Shiny-App zu starten
+# runApp('plots.R')
 
-# # Leaflet interactive map
-# interactive = leaflet(briefPlotLänder_longlat) %>%
-#   addTiles() %>%  # Add default OpenStreetMap tiles
-#   addControl(
-#     html = "<h3 style='text-align:center;'>Bundestagswahl 20xx</h3>",
-#     position = "bottomleft"
-#   ) %>%
-#   addPolygons(
-#     fillColor = ~pal(meistgewählt),
-#     group = ~meistgewählt,
-#     weight = 1,
-#     opacity = 1,
-#     color = "white",
-#     dashArray = "3",
-#     fillOpacity = 0.7,
-#     highlightOptions = highlightOptions(
-#       weight = 3,
-#       color = "#666",
-#       dashArray = "",
-#       fillOpacity = 0.9,
-#       bringToFront = TRUE
-#     ),
-#     label = ~paste0(Wahlkreisname, ": ", pct, "%"),
-#     labelOptions = labelOptions(
-#       style = list("font-weight" = "normal", padding = "3px 8px"), 357
-#     )
-#   ) %>%
-#   addLegend(
-#     pal = pal,
-#     values = ~meistgewählt,
-#     opacity = 0.7,
-#     title = "Partei",
-#     position = "bottomright"
-#   ) %>%
-#   addLayersControl(overlayGroups = levels(briefPlotLänder$meistgewählt),
-#                    options = layersControlOptions(collapsed = FALSE))
-# interactive
-#
+
+
 # resBundAnalyse = bundAnalyse(group = "Bezirksart")
 #
 # x1 = resBundAnalyse$Jahr[resBundAnalyse$Bezirksart == "Brief"]
