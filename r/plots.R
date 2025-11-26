@@ -46,14 +46,14 @@ briefPlotLänder$meistgewählt = factor(
 )
 
 # schwarze magie bei gott ich weiß nicht was abgeht
-temp_df <- briefPlotLänder %>%
+temp_df = briefPlotLänder %>%
   rowwise() %>%
   mutate(
     ref_value = get(as.character(meistgewählt), as.list(cur_data()))
   ) %>%
   ungroup()
 
-meist_vals <- temp_df %>%
+meist_vals = temp_df %>%
   group_by(WKR_NR, Jahr) %>%
   summarise(
     meist_brief = meistgewählt[Wahlbezirksart == "Brief"],
@@ -63,7 +63,7 @@ meist_vals <- temp_df %>%
     meistgewählt_total = ifelse(value_brief >= value_urne, meist_brief, meist_urne),
     .groups = "drop"
   )
-briefPlotLänder <- temp_df %>%
+briefPlotLänder = temp_df %>%
      left_join(
          meist_vals %>% st_drop_geometry() %>% select(WKR_NR, Jahr, meistgewählt_total),
          by = c("WKR_NR", "Jahr")
@@ -158,7 +158,7 @@ server = function(input, output, session) {
     switch (
       input$popup_mode,
       "Prozent" = (
-        daten$popup_content <- paste0(
+        daten$popup_content = paste0(
           "<strong>Wahlkreis: </strong>",
           daten$Wahlkreisname,
           "<br/>",
@@ -184,7 +184,7 @@ server = function(input, output, session) {
         )
       ),
       "Absolute" = (
-        daten$popup_content <- paste0(
+        daten$popup_content = paste0(
           "<strong>Wahlkreis: </strong>",
           daten$Wahlkreisname,
           "<br/>",
