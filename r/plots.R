@@ -1,22 +1,23 @@
 library(tidyverse)
 library(sf)
-library(giscoR)
+#library(giscoR)
 library(stringdist)
 library(leaflet)
 library(shiny)
 library(htmltools)
 source("main.r")
 
+#Ka ob wir das brauchen
+# bundesländer = gisco_get_nuts(
+#   country = "Germany",
+#   nuts_level = 1,
+#   year = "2024",
+#   epsg = 3035,
+#   resolution = "10"
+# )
+
 # Anteil der Briefwähler von allen Wahlberechtigten
 wahlkreise = st_read("../data/wahlkreise/wahlkreise.shp")
-
-bundesländer = gisco_get_nuts(
-  country = "Germany",
-  nuts_level = 1,
-  year = "2024",
-  epsg = 3035,
-  resolution = "10"
-)
 
 länderArt = kreis_daten_gesamt[, ] %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>%
   summarise(
@@ -36,7 +37,7 @@ länderArt$meistgewählt = max.col(länderArt[, (ncol(länderArt) - 6):(ncol(lä
 länderArt$pct = apply(länderArt[, (6:13)], 1, "max")
 länderArt$pct = pct(länderArt$pct / länderArt$Wähler)
 
-#briefPlotLänder17 = left_join(bundesländer, länderArt[länderArt$Jahr == 2017 & länderArt$Wahlbezirksart == "Brief",], by = c("NUTS_NAME" = "Land"))
+# fügt die räumlichen daten mit den wahlkreis daten zusammen
 briefPlotLänder = left_join(wahlkreise, länderArt, by = c("WKR_NR" = "Wahlkreis-Nr."))
 briefPlotLänder$meistgewählt = factor(
   briefPlotLänder$meistgewählt,
@@ -44,10 +45,37 @@ briefPlotLänder$meistgewählt = factor(
   c("CDU", "CSU", "SPD", "LINKE", "GRÜNE", "FDP", "AFD")
 )
 
-#interactive
-briefPlotLänder_longlat = st_transform(briefPlotLänder, crs = 4326)
+# schwarze magie bei gott ich weiß nicht was abgeht
+temp_df <- briefPlotLänder %>%
+  rowwise() %>%
+  mutate(
+    ref_value = get(as.character(meistgewählt), as.list(cur_data()))
+  ) %>%
+  ungroup()
 
-# Create a color palette function based on your party colors
+meist_vals <- temp_df %>%
+  group_by(WKR_NR, Jahr) %>%
+  summarise(
+    meist_brief = meistgewählt[Wahlbezirksart == "Brief"],
+    value_brief = ref_value[Wahlbezirksart == "Brief"],
+    meist_urne = meistgewählt[Wahlbezirksart == "Urne"],
+    value_urne = ref_value[Wahlbezirksart == "Urne"],
+    meistgewählt_total = ifelse(value_brief >= value_urne, meist_brief, meist_urne),
+    .groups = "drop"
+  )
+briefPlotLänder <- temp_df %>%
+     left_join(
+         meist_vals %>% st_drop_geometry() %>% select(WKR_NR, Jahr, meistgewählt_total),
+         by = c("WKR_NR", "Jahr")
+     )
+#faktor für die meistgewählte partei insgesamt
+briefPlotLänder$meistgewählt_total = factor(
+  briefPlotLänder$meistgewählt_total,
+  c("1", "2", "3", "4", "5", "6", "7"),
+  c("CDU", "CSU", "SPD", "LINKE", "GRÜNE", "FDP", "AFD")
+)
+
+# Gibt den Parteien farben
 party_colors = c(
   "CDU" = "black",
   "CSU" = "#343A40",
@@ -55,13 +83,17 @@ party_colors = c(
   "LINKE" = "pink",
   "GRÜNE" = "green",
   "FDP" = "yellow",
-  "AFD" = "lightblue"
+  "AFD" = "blue"
 )
-
-bbox = st_bbox(briefPlotLänder_longlat)
-
 pal = colorFactor(palette = party_colors, domain = briefPlotLänder$meistgewählt)
 
+#wandelt in das longlat format um für leaflet
+briefPlotLänder_longlat = st_transform(briefPlotLänder, crs = 4326)
+
+#macht eine bbox damit man den größtnen udn kleinsten punkt der karte hat fürn zoom
+bbox = st_bbox(briefPlotLänder_longlat)
+
+# alles ui Funktionen für die kontrollelementenoben rechts
 ui = bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
   leafletOutput("map", height = "100%", width = "100%"),
@@ -96,14 +128,19 @@ ui = bootstrapPage(
 )
 
 server = function(input, output, session) {
+  # reactive heißt er guckt auf änderungen in den input feldern und updated die daten dementsprechend
   gefilterte_daten = reactive({
     jahr = as.numeric(input$jahr)
     art = input$art
     daten = briefPlotLänder_longlat[briefPlotLänder_longlat$Jahr == jahr, ]
     if (art != "Beides") {
       daten = daten[daten$Wahlbezirksart == art, ]
+    } else {
+      daten$meistgewählt = daten$meistgewählt_total
+      #TODO beides overlay Brief und Urne dass im popup die addierten werte stehen
     }
-    #TODO beides overlay Brief und Urne
+    #TODO popup parteien nach stärke absteigend sortieren
+    #Switch case guckt in der input popup_mode choice box welche option gewählt wurde
     switch (
       input$popup_mode,
       "Prozent" = (
@@ -162,6 +199,7 @@ server = function(input, output, session) {
     daten
   })
   
+  # rendert die map zum ersten mal
   output$map = renderLeaflet({
     leaflet(briefPlotLänder_longlat) %>%
       addTiles() %>%
@@ -177,9 +215,11 @@ server = function(input, output, session) {
       )
   })
   
+  #observed ob sich die input daten geändert haben und updated dementsprechend die map
   observe({
     leafletProxy("map", data = gefilterte_daten()) %>%
       clearShapes() %>%
+      #polygons zeichnen für die füllfläche
       addPolygons(
         fillColor = ~ pal(meistgewählt),
         group = ~ meistgewählt,
@@ -195,6 +235,7 @@ server = function(input, output, session) {
           fillOpacity = 0.9,
           bringToFront = TRUE
         ),
+        # lqbels fürs drüber hovern
         label = ~ paste0(
           "<b>",
           Wahlkreisname,
@@ -209,6 +250,7 @@ server = function(input, output, session) {
           html = TRUE,
           direction = "auto"
         ),
+        #popup inhalte
         popup = ~ popup_content
       )
   })
