@@ -149,6 +149,7 @@ server = function(input, output, session) {
           GRÜNE = sum(GRÜNE),
           FDP = sum(FDP),
           AFD = sum(AFD),
+          pct = max(pct),
           meistgewählt = first(meistgewählt)
         )
       #TODO fix oben stehendes
