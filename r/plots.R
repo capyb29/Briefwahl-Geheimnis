@@ -230,6 +230,20 @@ ggplot(bund_komplett, aes(x = Bezirksart, y = Summe, fill = Bezirksart)) +
   theme_minimal() +
   theme(legend.position = "none")
 
+# altersgruppen
+gruppen = bund_komplett %>% group_by(Jahr, Bezirksart, Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe), CDU_CSU = sum(CDU) + sum(CSU), SPD = sum(SPD), GRÜNE = sum(GRÜNE), LINKE = sum(`DIE LINKE`), AFD = sum(AfD), FDP = sum(FDP))
 
+gruppen17 = gruppen[gruppen$Jahr == 2017,] %>% pivot_longer(cols = CDU_CSU:FDP, names_to = "Partei", values_to = "Stimmen")
+gruppen21 = gruppen[gruppen$Jahr == 2021,] %>% pivot_longer(cols = CDU_CSU:FDP, names_to = "Partei", values_to = "Stimmen")
+gruppen25 = gruppen[gruppen$Jahr == 2025,] %>% pivot_longer(cols = CDU_CSU:FDP, names_to = "Partei", values_to = "Stimmen")
 
+ggplot(gruppen25) +
+  aes(x = Geburtsjahresgruppe, y = Stimmen, fill = Partei) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("#382BF0", "#17171C", "#FFE419", "#24C210", "#D92DC5", "#D92E2E")) +
+  facet_wrap(~Bezirksart) +
+  labs(x = "Geburtsjahresgruppe", y = "Anzahl Stimmen", fill = "Partei",
+       title = "Stimmenanzahl nach Geburtsjahresgruppe, Partei und Bezirksart (2017)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
