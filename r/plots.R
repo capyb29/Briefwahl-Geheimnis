@@ -137,7 +137,21 @@ server = function(input, output, session) {
       daten = daten[daten$Wahlbezirksart == art, ]
     } else {
       daten$meistgewählt = daten$meistgewählt_total
-      #TODO beides overlay Brief und Urne dass im popup die addierten werte stehen
+      #parteien addieren für beides
+      daten = daten %>% group_by(WKR_NR) %>%
+        summarise(
+          Wahlkreisname = first(Wahlkreisname),
+          Wähler = sum(Wähler),
+          CDU = sum(CDU),
+          CSU = sum(CSU),
+          SPD = sum(SPD),
+          LINKE = sum(LINKE),
+          GRÜNE = sum(GRÜNE),
+          FDP = sum(FDP),
+          AFD = sum(AFD),
+          meistgewählt = first(meistgewählt)
+        )
+      #TODO fix oben stehendes
     }
     #TODO popup parteien nach stärke absteigend sortieren
     #Switch case guckt in der input popup_mode choice box welche option gewählt wurde
