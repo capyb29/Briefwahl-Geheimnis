@@ -8,6 +8,24 @@ source("main.r")
 # Anteil der Briefwähler von allen Wahlberechtigten
 wahlkreise = st_read("../data/wahlkreise/wahlkreise.shp")
 
+#Betiligung nach Art in Kreis
+
+betArtKreis = kreis_daten_gesamt %>% group_by(Jahr, `Wahlkreis-Nr.`, Wahlbezirksart) %>% summarise(Wähler = sum(Gültige))
+ichhörediestimme = kreis_daten_gesamt %>% group_by(Jahr, `Wahlkreis-Nr.`) %>% summarise(Stimmen = sum(Gültige))
+betArtKreis = betArtKreis %>% left_join(ichhörediestimme, by = c("Jahr", "Wahlkreis-Nr."))
+betArtKreis$artBeteiligung = pct(betArtKreis$Wähler / betArtKreis$Stimmen)
+
+plotBetArt = function(df) {
+  df = left_join(wahlkreise, df, by = c("WKR_NR" = "Wahlkreis-Nr."))
+  ggplot(df) +
+    geom_sf(aes(fill = artBeteiligung)) +
+    scale_fill_gradient(low = "red", high = "green") +
+    theme_minimal()
+}
+
+plotBetArt(betArtKreis[betArtKreis$Jahr == 2025 & betArtKreis$Wahlbezirksart == "Brief",])
+
+
 bundesländer = gisco_get_nuts(
   country = "Germany",
   nuts_level = 1,
@@ -29,6 +47,8 @@ briefPlotLänder$meistgewählt = factor(
   c("1", "2", "3", "4", "5", "6", "7"),
   c("CDU", "CSU", "SPD", "LINKE", "GRÜNE", "FDP", "AFD")
 )
+
+
 
 #interactive
 briefPlotLänder_longlat <- st_transform(briefPlotLänder, crs = 4326)
@@ -212,23 +232,8 @@ ggplot(bundArtGeschlecht, aes(x = factor(Jahr), y = Bezirksart_Anteil, fill = Ge
   theme(legend.position = "top")
 
 # hypothesentest ob wähler von geschlecht abhängt,
-# aktuell noch nicht ideal, da altersgruppen mit drin sind
-# am besten mit newData nochmal machen, weil mehr datensätze
-# dran denken alter rausnehmen
 tBrief = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Brief",])
 tUrne = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Urne",])
-
-
-#nur ein test
-# Create boxplot
-ggplot(bund_komplett, aes(x = Bezirksart, y = Summe, fill = Bezirksart)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_jitter(width = 0.15, alpha = 0.5) + # show individual points
-  labs(title = "Wähler",
-       x = "Bezirksart",
-       y = "Wähler") +
-  theme_minimal() +
-  theme(legend.position = "none")
 
 # altersgruppen
 gruppen = bund_komplett %>% group_by(Jahr, Bezirksart, Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe), CDU_CSU = sum(CDU) + sum(CSU), SPD = sum(SPD), GRÜNE = sum(GRÜNE), LINKE = sum(`DIE LINKE`), AFD = sum(AfD), FDP = sum(FDP))
