@@ -149,57 +149,70 @@ server = function(input, output, session) {
           GRÜNE = sum(GRÜNE),
           FDP = sum(FDP),
           AFD = sum(AFD),
-          pct = max(pct),
+          party_name = as.character(first(meistgewählt)),
+          pct = {
+            data_grp <- cur_data()
+            total_wähler <- sum(data_grp$Wähler)
+            party_votes <- switch(party_name,
+                                  "CDU" = sum(data_grp$CDU + data_grp$CSU),
+                                  "CSU" = sum(data_grp$CDU + data_grp$CSU),
+                                  "SPD" = sum(data_grp$SPD),
+                                  "LINKE" = sum(data_grp$LINKE),
+                                  "GRÜNE" = sum(data_grp$GRÜNE),
+                                  "FDP" = sum(data_grp$FDP),
+                                  "AFD" = sum(data_grp$AFD),
+                                  NA_real_
+            )
+            pct(party_votes / total_wähler)
+          },
           meistgewählt = first(meistgewählt)
         )
-      #TODO fix oben stehendes
     }
-    #TODO popup parteien nach stärke absteigend sortieren
     #Switch case guckt in der input popup_mode choice box welche option gewählt wurde
     switch (
       input$popup_mode,
       "Prozent" = (
-        daten$popup_content = paste0(
-          "<strong>Wahlkreis: </strong>",
-          daten$Wahlkreisname,
-          "<br/>",
-          "<strong>Parteien: </strong><br/>",
-          "CDU/CSU: ",
-          pct((daten$CDU + daten$CSU) / daten$Wähler),
-          "%<br/>",
-          "SPD: ",
-          pct(daten$SPD / daten$Wähler),
-          "%<br/>",
-          "LINKE: ",
-          pct(daten$LINKE / daten$Wähler),
-          "%<br/>",
-          "GRÜNE: ",
-          pct(daten$GRÜNE / daten$Wähler),
-          "%<br/>",
-          "FDP: ",
-          pct(daten$FDP / daten$Wähler),
-          "%<br/>",
-          "AFD: ",
-          pct(daten$AFD / daten$Wähler),
-          "%<br/>"
-        )
-      ),
-      "Absolute" = (
-        #TODO html shit
         daten$popup_content = apply(daten, 1, function(row) {
-          vals = as.numeric(row[levels(daten$meistgewählte)])
+          values = c(
+            "CDU/CSU" = as.numeric(row["CDU"]) + as.numeric(row["CSU"]),
+            "SPD" = as.numeric(row["SPD"]),
+            "LINKE" = as.numeric(row["LINKE"]),
+            "GRÜNE" = as.numeric(row["GRÜNE"]),
+            "FDP" = as.numeric(row["FDP"]),
+            "AFD" = as.numeric(row["AFD"])
+          )
           
-          vals["CDU/CSU"] = vals["CDU"] + vals["CSU"]
-          vals = vals[setdiff(names(vals), c("CDU", "CSU"))]
+            total = as.numeric(row["Wähler"])
+            values = pct(values / total)
           
-          vals = sort(vals, decreasing = TRUE)
+          values = sort(values, decreasing = TRUE)
           
-          partei_html = paste0(names(vals), ": ", vals, collapse = "<br/>")
+          partei_lines = paste0(names(values), ": ", values, if(input$popup_mode == "Prozent") "%" else "", "<br/>", collapse = "")
           
           paste0(
-            "<strong>Wahlkreis: </strong>", row[["Wahlkreisname"]], "<br/>",
+            "<strong>Wahlkreis: </strong>", row["Wahlkreisname"], "<br/>",
             "<strong>Parteien: </strong><br/>",
-            partei_html, "<br/>"
+            partei_lines
+          )
+        })
+      ),
+      "Absolute" = (
+        daten$popup_content = apply(daten, 1, function(row) {
+          values = c(
+            "CDU/CSU" = as.numeric(row["CDU"]) + as.numeric(row["CSU"]),
+            "SPD" = as.numeric(row["SPD"]),
+            "LINKE" = as.numeric(row["LINKE"]),
+            "GRÜNE" = as.numeric(row["GRÜNE"]),
+            "FDP" = as.numeric(row["FDP"]),
+            "AFD" = as.numeric(row["AFD"])
+          )
+          
+          values = sort(values, decreasing = TRUE)
+          partei_lines = paste0(names(values), ": ", values, if(input$popup_mode == "Prozent") "%" else "", "<br/>", collapse = "")
+          paste0(
+            "<strong>Wahlkreis: </strong>", row["Wahlkreisname"], "<br/>",
+            "<strong>Parteien: </strong><br/>",
+            partei_lines
           )
         })
       )
