@@ -19,11 +19,28 @@ plotBetArt = function(df) {
   df = left_join(wahlkreise, df, by = c("WKR_NR" = "Wahlkreis-Nr."))
   ggplot(df) +
     geom_sf(aes(fill = artBeteiligung)) +
-    scale_fill_gradient(low = "red", high = "green") +
-    theme_minimal()
+    scale_fill_gradient(low = "red", high = "green", limits = c(10 + (unique(df$Wahlbezirksart == "Urne") * 20),70 + (unique(df$Wahlbezirksart == "Urne") * 20))) +
+    labs(
+      title = paste0("Bundestagswahl ", unique(df$Jahr)),
+      subtitle = paste("Wahlbezirksart:", unique(df$Wahlbezirksart)),
+      fill = "Beteiligung (%)"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+      plot.subtitle = element_text(hjust = 0.5, size = 12),
+      legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+      legend.text = element_text(size = 8),
+    )
 }
 
+plotBetArt(betArtKreis[betArtKreis$Jahr == 2017 & betArtKreis$Wahlbezirksart == "Brief",])
+plotBetArt(betArtKreis[betArtKreis$Jahr == 2021 & betArtKreis$Wahlbezirksart == "Brief",])
 plotBetArt(betArtKreis[betArtKreis$Jahr == 2025 & betArtKreis$Wahlbezirksart == "Brief",])
+
+plotBetArt(betArtKreis[betArtKreis$Jahr == 2017 & betArtKreis$Wahlbezirksart == "Urne",])
+plotBetArt(betArtKreis[betArtKreis$Jahr == 2021 & betArtKreis$Wahlbezirksart == "Urne",])
+plotBetArt(betArtKreis[betArtKreis$Jahr == 2025 & betArtKreis$Wahlbezirksart == "Urne",])
 
 
 bundesländer = gisco_get_nuts(
