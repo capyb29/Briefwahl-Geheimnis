@@ -184,30 +184,23 @@ server = function(input, output, session) {
         )
       ),
       "Absolute" = (
-        daten$popup_content = paste0(
-          "<strong>Wahlkreis: </strong>",
-          daten$Wahlkreisname,
-          "<br/>",
-          "<strong>Parteien: </strong><br/>",
-          "CDU/CSU: ",
-          daten$CDU + daten$CSU,
-          "<br/>",
-          "SPD: ",
-          daten$SPD,
-          "<br/>",
-          "LINKE: ",
-          daten$LINKE,
-          "<br/>",
-          "GRÜNE: ",
-          daten$GRÜNE,
-          "<br/>",
-          "FDP: ",
-          daten$FDP,
-          "<br/>",
-          "AFD: ",
-          daten$AFD,
-          "<br/>"
-        )
+        #TODO html shit
+        daten$popup_content = apply(daten, 1, function(row) {
+          vals = as.numeric(row[levels(daten$meistgewählte)])
+          
+          vals["CDU/CSU"] = vals["CDU"] + vals["CSU"]
+          vals = vals[setdiff(names(vals), c("CDU", "CSU"))]
+          
+          vals = sort(vals, decreasing = TRUE)
+          
+          partei_html = paste0(names(vals), ": ", vals, collapse = "<br/>")
+          
+          paste0(
+            "<strong>Wahlkreis: </strong>", row[["Wahlkreisname"]], "<br/>",
+            "<strong>Parteien: </strong><br/>",
+            partei_html, "<br/>"
+          )
+        })
       )
     )
     daten
