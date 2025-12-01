@@ -20,7 +20,7 @@ df21 = loadcsv("21_neu.csv", 11)
 df25 = loadcsv("25_neu.csv", 10)
 
 newData = loadAndCleanNewData(df17, df21, df25)
-savecsv(newData, "new.csv")
+# savecsv(newData, "new.csv")
 
 
 # Anteil der Briefwähler pro Wahljahr
