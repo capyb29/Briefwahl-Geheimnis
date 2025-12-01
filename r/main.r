@@ -79,5 +79,26 @@ länderGeschlecht = newData[!newData$Land %in% c("Bund", "Berlin-Ost", "Berlin-W
   LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD), Sonstige = sum(Sonstige))
 länderGeschlecht$meistgewählt = max.col(länderGeschlecht[,(ncol(länderGeschlecht)-7):(ncol(länderGeschlecht)-1)])
 
+#TODO Profil csv erstelle für Matthes
 
+profile = function() {
+  group_sums = bund_komplett %>%
+    group_by(Jahr, Geschlecht, Geburtsjahresgruppe) %>%
+    summarise(gsumme = sum(Summe))
 
+  b = bund_komplett %>% group_by(Jahr, Bezirksart, Geschlecht, Geburtsjahresgruppe)
+  b = b[,-(14:18)]
+  b$CDU_CSU = b$CDU + b$CSU
+  b = b[,-11]
+  b = b[,-7]
+  b = b%>% pivot_longer(cols = SPD:CDU_CSU, names_to = "Partei", values_to = "Stimmen")
+  b = b %>% group_by(Jahr, Bezirksart, Geschlecht, Geburtsjahresgruppe) %>%
+    filter(Stimmen == max(Stimmen)) %>%
+    ungroup()
+  b$meistgewähltProzent = pct(b$Stimmen / b$Summe)
+  b = b %>% left_join(group_sums, by = c("Jahr", "Geschlecht", "Geburtsjahresgruppe")) %>% mutate(artBeteiligung = pct(Summe / gsumme))
+  b = b[,-10]
+}
+profileDF = profile()
+
+savecsv(profileDF, "profile.csv")
