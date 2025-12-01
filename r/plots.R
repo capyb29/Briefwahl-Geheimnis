@@ -252,6 +252,8 @@ ggplot(bundArtGeschlecht, aes(x = factor(Jahr), y = Bezirksart_Anteil, fill = Ge
 tBrief = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Brief",])
 tUrne = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Urne",])
 
+tTestRes = data.frame(Bezirksart = c("Brief", "Urne"), `p-value` = c(tBrief, tUrne))
+
 # altersgruppen
 gruppen = bund_komplett %>% group_by(Jahr, Bezirksart, Geburtsjahresgruppe) %>% summarise(Wähler = sum(Summe), CDU_CSU = sum(CDU) + sum(CSU), SPD = sum(SPD), GRÜNE = sum(GRÜNE), LINKE = sum(`DIE LINKE`), AFD = sum(AfD), FDP = sum(FDP))
 
