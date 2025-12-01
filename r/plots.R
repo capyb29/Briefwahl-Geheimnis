@@ -1,4 +1,5 @@
 library(tidyverse)
+library(tidyverse)
 library(sf)
 #library(giscoR)
 library(stringdist)
@@ -41,7 +42,7 @@ plotBetArt = function(df) {
       plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
       plot.subtitle = element_text(hjust = 0.5, size = 12),
       legend.title = element_text(hjust = 0.5, size = 12, face = "bold"),
-      legend.text = element_text(size = 8),
+      legend.text = element_text(size = 8)
     )
 }
 
@@ -218,7 +219,7 @@ server = function(input, output, session) {
 
           values = sort(values, decreasing = TRUE)
 
-          partei_lines = paste0(names(values), ": ", values, if(input$popup_mode == "Prozent") "%" else "", "<br/>", collapse = "")
+          partei_lines = paste0(names(values), ": ", values, if(input$popup_mode == "Prozent") {"%"} else {""}, "<br/>", collapse = "")
 
           paste0(
             "<strong>Wahlkreis: </strong>", row["Wahlkreisname"], "<br/>",
@@ -239,7 +240,7 @@ server = function(input, output, session) {
           )
 
           values = sort(values, decreasing = TRUE)
-          partei_lines = paste0(names(values), ": ", values, if(input$popup_mode == "Prozent") "%" else "", "<br/>", collapse = "")
+          partei_lines = paste0(names(values), ": ", values, if(input$popup_mode == "Prozent") {"%"} else {""}, "<br/>", collapse = "")
           paste0(
             "<strong>Wahlkreis: </strong>", row["Wahlkreisname"], "<br/>",
             "<strong>Parteien: </strong><br/>",
@@ -308,7 +309,6 @@ server = function(input, output, session) {
   })
 }
 
-shinyApp(ui, server)
 
 # Die Zeile unten in der R-Konsole!!! ausführen, um die Shiny-App zu starten
 # runApp('plots.R')
@@ -386,6 +386,7 @@ theme(axis.text.x = element_text(angle = 90, hjust = 1),
         legend.text = element_text(size = 8))
 
 print(p)
+}
 # Bayern und Rheinland-Pfalz immer oben mit dabei
 plot_wahlbeteiligung_jahr(anteileLänderJahre, 2017)
 ggsave("./plots/ArtAnteileLänder17.png")
@@ -442,12 +443,14 @@ gruppen17 = gruppen[gruppen$Jahr == 2017,] %>% pivot_longer(cols = CDU_CSU:FDP, 
 gruppen21 = gruppen[gruppen$Jahr == 2021,] %>% pivot_longer(cols = CDU_CSU:FDP, names_to = "Partei", values_to = "Stimmen")
 gruppen25 = gruppen[gruppen$Jahr == 2025,] %>% pivot_longer(cols = CDU_CSU:FDP, names_to = "Partei", values_to = "Stimmen")
 
-ggplot(gruppen25) +
-  aes(x = Geburtsjahresgruppe, y = Stimmen, fill = Partei) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c("#382BF0", "#17171C", "#FFE419", "#24C210", "#D92DC5", "#D92E2E")) +
-  facet_wrap(~Bezirksart) +
-  labs(x = "Geburtsjahresgruppe", y = "Anzahl Stimmen", fill = "Partei",
-       title = "Stimmenanzahl nach Geburtsjahresgruppe, Partei und Bezirksart (2017)") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ ggplot(gruppen25) +                                                                                 ##
+   aes(x = Geburtsjahresgruppe, y = Stimmen, fill = Partei) +                                        ##
+   geom_bar(stat = "identity", position = "dodge") +                                                 ##
+   scale_fill_manual(values = c("#382BF0", "#17171C", "#FFE419", "#24C210", "#D92DC5", "#D92E2E")) + ##
+   facet_wrap(~Bezirksart) +                                                                         ##
+   labs(x = "Geburtsjahresgruppe", y = "Anzahl Stimmen", fill = "Partei",                            ##
+        title = "Stimmenanzahl nach Geburtsjahresgruppe, Partei und Bezirksart (2017)") +            ##
+   theme_minimal() +                                                                                 ##
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))                                          ##
+
+shinyApp(ui,server)
