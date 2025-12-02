@@ -79,8 +79,6 @@ länderGeschlecht = newData[!newData$Land %in% c("Bund", "Berlin-Ost", "Berlin-W
   LINKE = sum(`DIE LINKE`), GRÜNE = sum(GRÜNE), FDP = sum(FDP), AFD = sum(AfD), Sonstige = sum(Sonstige))
 länderGeschlecht$meistgewählt = max.col(länderGeschlecht[,(ncol(länderGeschlecht)-7):(ncol(länderGeschlecht)-1)])
 
-#TODO Profil csv erstelle für Matthes
-
 profile = function() {
   group_sums = bund_komplett %>%
     group_by(Jahr, Geschlecht, Geburtsjahresgruppe) %>%
