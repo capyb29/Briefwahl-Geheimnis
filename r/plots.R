@@ -589,12 +589,52 @@ shinyApp(ui, server)
 
 # Geschlechtsanteile pro Jahr
 
-geschlechterAnteil = bund_komplett[bund_komplett$Bezirksart == "Brief",] %>% group_by(Jahr, Geschlecht) %>% summarise(Summe = sum(Summe)) %>% mutate(pct = Summe / sum(Summe))
 
-pieGeschlecht = function(Jahr) {
-  data = geschlechterAnteil[geschlechterAnteil$Jahr == Jahr,]
-  pie(data$Summe, labels = c(paste0("männlich: ", pct(data$pct[data$Geschlecht == "m"]), "%"), paste0("weiblich: ", pct(data$pct[data$Geschlecht == "w"]), "%")), col = c("lightblue", "pink"), border = "white", main = paste0("Geschlechteranteil ", Jahr))
+
+pieGeschlecht = function(Jahr, Bezirksart = "Brief", gbgruppe = NULL) {
+  data = bund_komplett
+  if (!is.null(gbgruppe)) {
+    data = data[data$Geburtsjahresgruppe %in% gbgruppe,]
+  }
+  data = data[data$Bezirksart == Bezirksart,] %>% group_by(Jahr, Geschlecht) %>% summarise(Summe = sum(Summe)) %>% mutate(pct = pct(Summe / sum(Summe)))
+  data = data[data$Jahr == Jahr,]
+  pie(data$Summe, labels = c(paste0("männlich: ", data$pct[data$Geschlecht == "m"], "%"), paste0("weiblich: ", data$pct[data$Geschlecht == "w"], "%")), col = c("lightblue", "pink"), border = "white", main = paste0("Geschlechteranteil ", Jahr))
 }
 pieGeschlecht(2017)
 pieGeschlecht(2021)
 pieGeschlecht(2025)
+pieGeschlecht(2017, gbgruppe = c("1993 - 1999"))
+pieGeschlecht(2021, gbgruppe = c("1997 - 2003"))
+pieGeschlecht(2025, gbgruppe = c("2001-2007"))
+
+# geburtsgruppen barplot nach jahr und geschlecht
+
+geburtsgruppe = function(Jahr, Geschlecht, Bezirksart = "Brief", ylim = 2000000) {
+  data = bund_komplett
+  data = data[data$Jahr == Jahr & data$Geschlecht == Geschlecht & data$Bezirksart == Bezirksart,]
+  data = data %>% group_by(Geburtsjahresgruppe) %>% summarise(Summe = sum(Summe)) %>% mutate(pct = pct(Summe / sum(Summe))) %>% arrange(desc(Summe)) %>% head(5)
+  
+  if (Geschlecht == "m") {
+    col = "lightblue"
+  } else {
+    col = "pink"
+  }
+  
+  barplot(main = paste0("Anzahl Wähler nach Geburtsjahresgruppen\nWahl ", Jahr), xlab = "Geburtsjahresgruppen", ylab = "Anzahl Stimmen", height = data$Summe, col = col, names = data$Geburtsjahresgruppe, ylim = c(0, ylim))
+}
+
+geburtsgruppe(2017, "w")
+geburtsgruppe(2021, "w", ylim = 3000000)
+geburtsgruppe(2025, "w", ylim = 2700000)
+
+geburtsgruppe(2017, "m", ylim = 1800000)
+geburtsgruppe(2021, "m", ylim = 2600000)
+geburtsgruppe(2025, "m")
+
+geburtsgruppe(2017, "w", ylim = 5500000, Bezirksart = "Urne")
+geburtsgruppe(2021, "w", ylim = 3500000, Bezirksart = "Urne")
+geburtsgruppe(2025, "w", ylim = 4500000, Bezirksart = "Urne")
+
+geburtsgruppe(2017, "m", ylim = 5500000, Bezirksart = "Urne")
+geburtsgruppe(2021, "m", ylim = 3500000, Bezirksart = "Urne")
+geburtsgruppe(2025, "m", ylim = 4000000, Bezirksart = "Urne")
