@@ -585,3 +585,16 @@ ggplot(gruppen25) +                                                             
   theme(axis.text.x = element_text(angle = 45, hjust = 1))                                          ##
 
 shinyApp(ui, server)
+
+
+# Geschlechtsanteile pro Jahr
+
+geschlechterAnteil = bund_komplett[bund_komplett$Bezirksart == "Brief",] %>% group_by(Jahr, Geschlecht) %>% summarise(Summe = sum(Summe)) %>% mutate(pct = Summe / sum(Summe))
+
+pieGeschlecht = function(Jahr) {
+  data = geschlechterAnteil[geschlechterAnteil$Jahr == Jahr,]
+  pie(data$Summe, labels = c(paste0("männlich: ", pct(data$pct[data$Geschlecht == "m"]), "%"), paste0("weiblich: ", pct(data$pct[data$Geschlecht == "w"]), "%")), col = c("lightblue", "pink"), border = "white", main = paste0("Geschlechteranteil ", Jahr))
+}
+pieGeschlecht(2017)
+pieGeschlecht(2021)
+pieGeschlecht(2025)
