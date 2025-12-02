@@ -245,7 +245,10 @@ tBrief = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksar
 tUrne = t.test(Summe ~ Geschlecht, data = bund_komplett[bund_komplett$Bezirksart == "Urne", ])
 
 tTestRes = data.frame(Bezirksart = c("Brief", "Urne"),
-                      `p-value` = c(tBrief, tUrne))
+                      `p-value` = c(tBrief$p.value, tUrne$p.value))
+
+barplot(tTestRes$p.value, names = c("Brief", "Urne"), xlab = "Bezirksart", ylab = "P-Value", main = "Einfluss von Geschlecht auf die Summe der Wähler", col = c("#ffb703", "#023047"), ylim = c(0,1))
+abline(0.05, 0, lty = 2)
 
 # altersgruppen
 gruppen = bund_komplett %>% group_by(Jahr, Bezirksart, Geburtsjahresgruppe) %>% summarise(
