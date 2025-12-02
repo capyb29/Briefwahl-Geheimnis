@@ -607,6 +607,10 @@ pieGeschlecht(2017, gbgruppe = c("1993 - 1999"))
 pieGeschlecht(2021, gbgruppe = c("1997 - 2003"))
 pieGeschlecht(2025, gbgruppe = c("2001-2007"))
 
+pieGeschlecht(2017, "Urne")
+pieGeschlecht(2021, "Urne")
+pieGeschlecht(2025, "Urne")
+
 # geburtsgruppen barplot nach jahr und geschlecht
 
 geburtsgruppe = function(Jahr, Geschlecht, Bezirksart = "Brief", ylim = 2000000) {
@@ -638,3 +642,46 @@ geburtsgruppe(2025, "w", ylim = 4500000, Bezirksart = "Urne")
 geburtsgruppe(2017, "m", ylim = 5500000, Bezirksart = "Urne")
 geburtsgruppe(2021, "m", ylim = 3500000, Bezirksart = "Urne")
 geburtsgruppe(2025, "m", ylim = 4000000, Bezirksart = "Urne")
+
+# parteien für die gruppe
+
+partyPlot = function(Jahr, Bezirksart = "Brief", Geschlecht, gbgruppe = NULL, ylim = 1000000) {
+  
+  cols = c("blue", "black", "pink", "yellow", "green", "red")
+  
+  data = bund_komplett
+  data = data[data$Jahr == Jahr & data$Bezirksart == Bezirksart & data$Geschlecht == Geschlecht & data$Geburtsjahresgruppe %in% gbgruppe,] %>% 
+    mutate(CDU_CSU = CDU + CSU) %>% pivot_longer(cols = c(CDU_CSU, SPD, GRÜNE, `DIE LINKE`, AfD, FDP), values_to = "Stimmen", names_to = "Partei") %>% select(Partei, Stimmen) %>% group_by(Partei) %>% summarise(Stimmen = sum(Stimmen)) %>%
+    arrange(Partei) %>% mutate(Color = cols) %>% arrange(desc(Stimmen)) %>% mutate(pct = pct(Stimmen / sum(Stimmen)))
+  
+  barplot(main = "Anzahl Wähler nach Parteien für das Wahlprofil", names = data$Partei, height = data$Stimmen, xlab = "Partei", ylab = "Stimmen", col = data$Color, ylim = c(0, ylim))
+}
+
+partyPlot(2017, "Brief", "w", "1947 und früher")
+partyPlot(2021, "Brief", "w", "1951 und früher", 1200000)
+partyPlot(2021, "Brief", "w", "1962 - 1976", 800000)
+partyPlot(2025, "Brief", "w", "<=1955", 1200000)
+
+partyPlot(2017, "Brief", "m", "1947 und früher", 600000)
+partyPlot(2017, "Brief", "m", "1958 - 1972", 600000)
+
+partyPlot(2021, "Brief", "m", "1951 und früher", 800000)
+partyPlot(2021, "Brief", "m", "1962 - 1976", 700000)
+
+partyPlot(2025, "Brief", "m", "<=1955", 900000)
+
+partyPlot(2017, "Brief", "w", "1993 - 1999", 150000)
+partyPlot(2017, "Brief", "m", "1993 - 1999", 100000)
+
+partyPlot(2021, "Brief", "w", "1997 - 2003", 300000)
+partyPlot(2021, "Brief", "m", "1997 - 2003", 200000)
+
+partyPlot(2025, "Brief", "w", "2001-2007", 200000)
+partyPlot(2025, "Brief", "m", "2001-2007", 100000)
+
+partyPlot(2017, "Urne", "w", "1958 - 1972", 1600000)
+
+partyPlot(2021, "Urne", "w", "1962 - 1976")
+partyPlot(2021, "Urne", "w", "1951 und früher")
+
+partyPlot(2025, "Urne", "m", "1966-1980", 1600000)
