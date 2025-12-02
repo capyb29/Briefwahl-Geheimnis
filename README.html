@@ -14,10 +14,50 @@
 <body>
 
 <h1 id="analyse-briefwahlen">Analyse Briefwahlen</h1>
-<p>Project für das Bootcamp “Beyond Data” für die FH Wedel.</p>
+<p>Projekt für das Bootcamp “Beyond Data” für die FH Wedel.</p>
 <p>Daten wurden von <a
 href="https://www.bundeswahlleiterin.de/bundestagswahlen/2025/informationen-waehler/briefwahl.html">Bundeswahlleiterin</a>
-als CSV Daten herruntergeladen und</p>
+als CSV Daten heruntergeladen und für uns passend verarbeitet.</p>
+<ol type="1">
+<li><strong>Bereinigung</strong>
+<ul>
+<li>NA Werte werden entfernt</li>
+<li>Erst-stimme wurde entfernt</li>
+<li>M | D | O wurde zu männlich geändert</li>
+<li>Formatierungen Standardisieren (Die Linke zu LINKE)</li>
+</ul></li>
+<li><strong>Gruppierung</strong>
+<ul>
+<li>Briefwähler für Land und Bund jeweils in ein Dataframe
+zusammengefasst</li>
+<li>Nach Bundesländern und Wahlkreisen zusammengefasst</li>
+<li>Verarbeitete CSV Daten gespeichert</li>
+</ul></li>
+<li><strong>Filterung und Bearbeitung der Dataframes</strong>
+<ul>
+<li>Ein Zentrales Dataframe aus allen anderen zusammengeführt</li>
+<li>Filterfunktionen geschrieben um das Hauptdataframe dynamisch nach
+unseren Anforderungen zu Filtern</li>
+</ul></li>
+<li><strong>Plots und Grafiken</strong>
+<ul>
+<li>Aus dem gefilterten Hauptdataframe passende Diagramme und
+Visualisierungen erstellt</li>
+<li>Torten Diagramme für Männliche/Weibliche Wahlbeteiligung</li>
+<li>Säulen Diagramme für Parteiwahlergebnisse</li>
+<li>Säulen Diagramme für meisten Briefwähler</li>
+</ul></li>
+<li><strong>Interaktive Karte</strong>
+<ul>
+<li>Server und Ui Dateien erstellt</li>
+<li>Ui: UI Elemente in der Oberen Linken Ecke erstellt</li>
+<li>Server: Karte wird von Leaflet gefetched und es werden farbige
+Polygons basierend auf den Wahlergebnissen angewendet</li>
+<li>Filterung der Karte kann durch die UI Elemente geändert
+werden(Absolute vs Prozentuale Zahlen)</li>
+</ul></li>
+</ol>
+<p><img src="./data/Screenshot_Map.png" /></p>
 
 </body>
 </html>
