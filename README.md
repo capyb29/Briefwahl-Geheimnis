@@ -1,12 +1,4 @@
-# TODO
-- Korrelationsanalyse: Wahlberechtigte ~ tatsächliche Wähler
-- Regression?
-- Geburtsjahre und Geschlecht analysieren
-- Interactive Kreis-Karte
-  - Jahres Auswahl
-  - Auswahl Brief Urne Gesamt
-  - Parteien Toggle
-  - Länder Toggle
-- Interactive Bund-karte
-  - Toggle Männlich weiblich, altersgruppen, parteien, jahre
-  
+# Analyse Briefwahlen
+ Project für das Bootcamp "Beyond Data" für die FH Wedel.
+
+Daten wurden von [Bundeswahlleiterin](https://www.bundeswahlleiterin.de/bundestagswahlen/2025/informationen-waehler/briefwahl.html) als CSV Daten herruntergeladen und  
