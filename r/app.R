@@ -1,9 +1,12 @@
+require(leaflet)
 library(tidyverse)
 library(shiny)
 library(leaflet)
 library(stringdist)
 library(sf)
 library(htmltools)
+source("./main.r")
+
 
 # Anteil der Briefwähler von allen Wahlberechtigten
 wahlkreise = st_read("../data/wahlkreise/wahlkreise.shp")
@@ -78,7 +81,43 @@ briefPlotLänder_longlat = st_transform(briefPlotLänder, crs = 4326)
 
 bbox = st_bbox(briefPlotLänder_longlat)
 
-function(input, output, session) {
+
+
+
+ui = bootstrapPage(
+  tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
+  leafletOutput("map", height = "100%", width = "100%"),
+  absolutePanel(
+    top = 10,
+    width = "8vw",
+    height = "auto",
+    right = 5,
+    style = "background-color: #f5f5f5; padding: 10px; border-radius: 5px;",
+    radioButtons(
+      "jahr",
+      "Wahljahr",
+      choices = c("2017", "2021", "2025"),
+      selected = "2025"
+    ),
+    radioButtons(
+      "art",
+      "Wahlart",
+      choices = c("Brief", "Urne", "Beides"),
+      selected = "Beides"
+    ),
+    selectInput(
+      "popup_mode",
+      "Popup-Anzeige",
+      choices = c(
+        "Absolute Zahlen" = "Absolute",
+        "Prozentuale Anteile" = "Prozent"
+      ),
+      selected = "Absolute"
+    )
+  )
+)
+
+server = function(input, output, session) {
   # reactive heißt er guckt auf änderungen in den input feldern und updated die daten dementsprechend
   gefilterte_daten = reactive({
     jahr = as.numeric(input$jahr)
@@ -132,18 +171,18 @@ function(input, output, session) {
           "FDP" = as.numeric(row["FDP"]),
           "AFD" = as.numeric(row["AFD"])
         )
-
+        
         total = as.numeric(row["Wähler"])
         values = pct(values / total)
-
+        
         values = sort(values, decreasing = TRUE)
-
+        
         partei_lines = paste0(names(values), ": ", values, if (input$popup_mode == "Prozent") {
           "%"
         } else {
           ""
         }, "<br/>", collapse = "")
-
+        
         paste0(
           "<strong>Wahlkreis: </strong>",
           row["Wahlkreisname"],
@@ -161,7 +200,7 @@ function(input, output, session) {
           "FDP" = as.numeric(row["FDP"]),
           "AFD" = as.numeric(row["AFD"])
         )
-
+        
         values = sort(values, decreasing = TRUE)
         partei_lines = paste0(names(values), ": ", values, if (input$popup_mode == "Prozent") {
           "%"
@@ -179,7 +218,7 @@ function(input, output, session) {
     )
     daten
   })
-
+  
   # rendert die map zum ersten mal
   output$map = renderLeaflet({
     leaflet(briefPlotLänder_longlat) %>%
@@ -195,7 +234,7 @@ function(input, output, session) {
         position = "bottomright"
       )
   })
-
+  
   #observed ob sich die input daten geändert haben und updated dementsprechend die map
   observe({
     leafletProxy("map", data = gefilterte_daten()) %>%
@@ -236,3 +275,5 @@ function(input, output, session) {
       )
   })
 }
+
+shinyApp(ui, server)
