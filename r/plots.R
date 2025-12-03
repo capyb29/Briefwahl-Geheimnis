@@ -250,6 +250,27 @@ tTestRes = data.frame(Bezirksart = c("Brief", "Urne"),
 barplot(tTestRes$p.value, names = c("Brief", "Urne"), xlab = "Bezirksart", ylab = "P-Value", main = "Einfluss von Geschlecht auf die Summe der Wähler", col = c("#ffb703", "#023047"), ylim = c(0,1))
 abline(0.05, 0, lty = 2)
 
+# geschlechter in den parteien
+
+testGenderInParty = function(Bezirksart) {
+  data = bund_komplett[bund_komplett$Bezirksart == Bezirksart,] %>% mutate(CDU_CSU = CDU + CSU) %>% select(Geschlecht, CDU_CSU, SPD, GRÜNE, AfD, `DIE LINKE`, FDP)
+  
+  tCDU = t.test(CDU_CSU ~ Geschlecht, data = data)
+  tSPD = t.test(SPD ~ Geschlecht, data = data)
+  tGRÜNE = t.test(GRÜNE ~ Geschlecht, data = data)
+  tAFD = t.test(AfD ~ Geschlecht, data = data)
+  tLINKE = t.test(`DIE LINKE` ~ Geschlecht, data = data)
+  tFDP = t.test(FDP ~ Geschlecht, data = data)
+  
+  l = list(tCDU, tSPD, tGRÜNE, tAFD, tLINKE, tFDP)
+  return(l)
+}
+
+testGenderInParty("Brief")
+# signifikanter unterschied nur bei grüne und afd
+# grüne p = 4% (mehr frauen)
+# afd p = 6% (mehr männer)
+
 # altersgruppen
 gruppen = bund_komplett %>% group_by(Jahr, Bezirksart, Geburtsjahresgruppe) %>% summarise(
   Wähler = sum(Summe),
